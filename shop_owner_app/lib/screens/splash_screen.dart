@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/user_provider.dart';
-import 'shop/shop_registration_screen.dart';
+import '../services/simple_auth_service.dart';
+import 'auth/simple_login_screen.dart';
 import 'home/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -21,25 +22,30 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkUserStatus() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
-    // Load saved username
-    await userProvider.loadUsername();
+    final authService = SimpleAuthService();
     
     // Wait for splash screen animation
     await Future.delayed(const Duration(seconds: 2));
     
-    if (mounted) {
-      if (userProvider.hasUsername) {
-        // User has shop registered, go to main screen
+    if (!mounted) return;
+    
+    try {
+      final owner = await authService.loadSavedAuth();
+      
+      if (owner != null) {
+        userProvider.setUser(owner);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
-        // No shop registered, show registration screen
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const ShopRegistrationScreen()),
+          MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
         );
       }
+    } catch (e) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
+      );
     }
   }
 

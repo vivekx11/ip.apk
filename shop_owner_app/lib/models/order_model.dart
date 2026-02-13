@@ -1,3 +1,5 @@
+// Order model for marketplace app
+
 class OrderModel {
   final String id;
   final String userId;
@@ -44,6 +46,33 @@ class OrderModel {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: json['updatedAt'] != null 
           ? DateTime.parse(json['updatedAt']) 
+          : null,
+    );
+  }
+
+  factory OrderModel.fromFirestore(Map<String, dynamic> data, String id) {
+    return OrderModel(
+      id: id,
+      userId: data['userId'] ?? '',
+      shopId: data['shopId'] ?? '',
+      shopName: data['shopName'] ?? '',
+      items: (data['items'] as List?)
+          ?.map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
+          .toList() ?? [],
+      totalAmount: (data['totalAmount'] ?? 0.0).toDouble(),
+      status: data['status'] ?? 'pending',
+      orderToken: data['orderToken'] ?? '',
+      deliveryAddress: data['deliveryAddress'],
+      notes: data['notes'],
+      createdAt: data['createdAt'] != null 
+          ? (data['createdAt'] is String 
+              ? DateTime.parse(data['createdAt'])
+              : DateTime.now())
+          : DateTime.now(),
+      updatedAt: data['updatedAt'] != null 
+          ? (data['updatedAt'] is String 
+              ? DateTime.parse(data['updatedAt'])
+              : null)
           : null,
     );
   }

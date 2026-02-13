@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../models/shop_model.dart';
-import '../../providers/shop_provider.dart';
+import '../../providers/product_provider.dart';
 import '../../services/network_service.dart';
-import 'shop_details_screen.dart';
+import 'shop_products_screen.dart';
 
 class ShopsScreen extends StatefulWidget {
-  const ShopsScreen({super.key});
+  final String? searchQuery;
+  
+  const ShopsScreen({super.key, this.searchQuery});
 
   @override
   State<ShopsScreen> createState() => _ShopsScreenState();
@@ -15,12 +16,15 @@ class ShopsScreen extends StatefulWidget {
 
 class _ShopsScreenState extends State<ShopsScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<Shop> _filteredShops = [];
+  List<String> _filteredShops = [];
 
   @override
   void initState() {
     super.initState();
-    _loadShops();
+    _loadProducts();
+    if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
+      _searchController.text = widget.searchQuery!;
+    }
   }
 
   @override
@@ -29,20 +33,18 @@ class _ShopsScreenState extends State<ShopsScreen> {
     super.dispose();
   }
 
-  void _loadShops() {
-    final shopProvider = Provider.of<ShopProvider>(context, listen: false);
-    shopProvider.loadShops();
+  void _loadProducts() {
+    final productProvider = Provider.of<ProductProvider>(context, listen: false);
+    productProvider.loadProducts();
   }
 
-  void _filterShops(String query, List<Shop> shops) {
+  void _filterShops(String query, List<String> shops) {
     setState(() {
       if (query.isEmpty) {
         _filteredShops = shops;
       } else {
         _filteredShops = shops.where((shop) {
-          return shop.name.toLowerCase().contains(query.toLowerCase()) ||
-                 shop.category.toLowerCase().contains(query.toLowerCase()) ||
-                 shop.description.toLowerCase().contains(query.toLowerCase());
+          return shop.toLowerCase().contains(query.toLowerCase());
         }).toList();
       }
     });
@@ -51,18 +53,21 @@ class _ShopsScreenState extends State<ShopsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
+      backgroundColor: AppTheme.softPink,
       appBar: AppBar(
         title: const Text('Discover Shops'),
         backgroundColor: AppTheme.primaryPink,
-        foregroundColor: AppTheme.white,
+        foregroundColor: AppTheme.darkGrey,
         elevation: 0,
       ),
-      body: Consumer2<ShopProvider, NetworkService>(
-        builder: (context, shopProvider, networkService, child) {
+      body: Consumer2<ProductProvider, NetworkService>(
+        builder: (context, productProvider, networkService, child) {
+          // Get unique shop names from products
+          final shopNames = productProvider.getUniqueShopNames();
+          
           // Update filtered shops when shops change
-          if (_filteredShops.isEmpty && shopProvider.shops.isNotEmpty) {
-            _filteredShops = shopProvider.shops;
+          if (_filteredShops.isEmpty && shopNames.isNotEmpty) {
+            _filteredShops = shopNames;
           }
 
           return Column(
@@ -73,9 +78,9 @@ class _ShopsScreenState extends State<ShopsScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (query) => _filterShops(query, shopProvider.shops),
+                  onChanged: (query) => _filterShops(query, shopNames),
                   decoration: InputDecoration(
-                    hintText: 'Search shops, categories...',
+                    hintText: 'Search shops...',
                     prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
                     filled: true,
                     fillColor: AppTheme.white,
@@ -90,13 +95,13 @@ class _ShopsScreenState extends State<ShopsScreen> {
 
               // Shops List
               Expanded(
-                child: shopProvider.isLoading
+                child: productProvider.isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
                           color: AppTheme.primaryPink,
                         ),
                       )
-                    : shopProvider.error != null
+                    : productProvider.error != null
                         ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -122,7 +127,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                                 Text(
                                   networkService.isOffline 
                                     ? 'Please check your connection and try again'
-                                    : shopProvider.error ?? 'Something went wrong',
+                                    : productProvider.error ?? 'Something went wrong',
                                   style: const TextStyle(
                                     fontSize: 14,
                                     color: AppTheme.lightGrey,
@@ -131,10 +136,10 @@ class _ShopsScreenState extends State<ShopsScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 ElevatedButton(
-                                  onPressed: _loadShops,
+                                  onPressed: _loadProducts,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.primaryPink,
-                                    foregroundColor: AppTheme.white,
+                                    foregroundColor: AppTheme.darkGrey,
                                   ),
                                   child: const Text('Retry'),
                                 ),
@@ -164,21 +169,24 @@ class _ShopsScreenState extends State<ShopsScreen> {
                                       'Try adjusting your search or check back later',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: AppTheme.lightGrey,
+                                        color: AppTheme.mediumGrey,
                                       ),
                                     ),
                                   ],
                                 ),
                               )
                             : RefreshIndicator(
-                                onRefresh: () async => _loadShops(),
+                                onRefresh: () async => _loadProducts(),
                                 color: AppTheme.primaryPink,
                                 child: ListView.builder(
                                   padding: const EdgeInsets.all(16),
                                   itemCount: _filteredShops.length,
                                   itemBuilder: (context, index) {
-                                    final shop = _filteredShops[index];
-                                    return _buildShopCard(shop);
+                                    final shopName = _filteredShops[index];
+                                    final shopProducts = productProvider.products
+                                        .where((p) => p.shopName == shopName)
+                                        .toList();
+                                    return _buildShopCard(shopName, shopProducts.length);
                                   },
                                 ),
                               ),
@@ -190,7 +198,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
     );
   }
 
-  Widget _buildShopCard(Shop shop) {
+  Widget _buildShopCard(String shopName, int productCount) {
     return Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16),
@@ -200,7 +208,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ShopDetailsScreen(shop: shop),
+              builder: (context) => ShopProductsScreen(shopName: shopName),
             ),
           );
         },
@@ -209,12 +217,12 @@ class _ShopsScreenState extends State<ShopsScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Shop Image/Icon
+              // Shop Icon
               Container(
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppTheme.lightGrey,
+                  color: AppTheme.lightPink,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -230,78 +238,24 @@ class _ShopsScreenState extends State<ShopsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            shop.name,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.darkGrey,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: shop.isOpen ? Colors.green : Colors.red,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            shop.isOpen ? 'Open' : 'Closed',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
                     Text(
-                      shop.description,
+                      shopName,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                         color: AppTheme.darkGrey,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryPink.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            shop.category,
-                            style: const TextStyle(
-                              color: AppTheme.primaryPink,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
+                        const Icon(Icons.shopping_bag, size: 16, color: AppTheme.mediumGrey),
                         const SizedBox(width: 4),
                         Text(
-                          shop.rating.toString(),
+                          '$productCount products',
                           style: const TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.darkGrey,
+                            color: AppTheme.mediumGrey,
                           ),
                         ),
                       ],
@@ -309,6 +263,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                   ],
                 ),
               ),
+              const Icon(Icons.arrow_forward_ios, color: AppTheme.mediumGrey, size: 20),
             ],
           ),
         ),

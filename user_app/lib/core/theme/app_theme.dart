@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Pink theme colors for User App
-  static const Color primaryPink = Color(0xFFE91E63);
-  static const Color lightPink = Color(0xFFF8BBD9);
-  static const Color softPink = Color(0xFFFCE4EC);
+  // Light Pink theme colors for User App
+  static const Color primaryPink = Color(0xFFFFB6C1); // Light Pink
+  static const Color lightPink = Color(0xFFFFDAE0); // Very Light Pink
+  static const Color softPink = Color(0xFFFFF0F3); // Soft Pink Background
   static const Color white = Color(0xFFFFFFFF);
   static const Color darkGrey = Color(0xFF424242);
-  static const Color lightGrey = Color(0xFFF5F5F5);
+  static const Color mediumGrey = Color(0xFF757575);
+  static const Color lightGrey = Color(0xFFFFF5F7); // Light Pink Grey
+  
+  // Status colors
+  static const Color warningOrange = Color(0xFFFF9800);
+  static const Color primaryIndigo = Color(0xFF3F51B5);
+  static const Color successGreen = Color(0xFF4CAF50);
+  static const Color errorRed = Color(0xFFF44336);
 
   static ThemeData get userAppTheme {
     return ThemeData(

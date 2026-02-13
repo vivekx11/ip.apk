@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import '../core/theme/app_theme.dart';
-import '../providers/user_provider.dart';
-import 'auth/username_setup_screen.dart';
+import '../providers/auth_provider.dart';
+import '../services/simple_auth_service.dart';
+import 'auth/simple_login_screen.dart';
 import 'home/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -20,64 +22,69 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkUserStatus() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
-    // Load saved username
-    await userProvider.loadUsername();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authService = SimpleAuthService();
     
     // Wait for splash screen animation
     await Future.delayed(const Duration(seconds: 2));
     
-    if (mounted) {
-      if (userProvider.hasUsername) {
-        // User has username, go to main screen
+    if (!mounted) return;
+    
+    try {
+      final user = await authService.loadSavedAuth();
+      
+      if (user != null) {
+        authProvider.setUser(user);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
-        // No username, show setup screen
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const UsernameSetupScreen()),
+          MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
         );
       }
+    } catch (e) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.primaryPink,
+      backgroundColor: AppTheme.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppTheme.white,
-                borderRadius: BorderRadius.circular(60),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.lightPink.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.shopping_bag,
-                size: 60,
-                color: AppTheme.primaryPink,
+            Lottie.network(
+              'https://lottie.host/95a5f784-9642-498c-8f9f-4318d1f2b1c4/G2In3j3V3Y.json',
+              width: 280,
+              height: 280,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: AppTheme.softPink,
+                  borderRadius: BorderRadius.circular(60),
+                ),
+                child: const Icon(
+                  Icons.shopping_bag,
+                  size: 60,
+                  color: AppTheme.primaryPink,
+                ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             const Text(
               'Local Marketplace',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.white,
+                color: AppTheme.primaryPink,
+                letterSpacing: 1.2,
               ),
             ),
             const SizedBox(height: 8),
@@ -85,13 +92,10 @@ class _SplashScreenState extends State<SplashScreen> {
               'Shop Local, Shop Easy',
               style: TextStyle(
                 fontSize: 16,
-                color: AppTheme.white,
+                color: AppTheme.darkGrey,
                 fontWeight: FontWeight.w300,
+                letterSpacing: 2,
               ),
-            ),
-            const SizedBox(height: 48),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.white),
             ),
           ],
         ),

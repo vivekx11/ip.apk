@@ -1,33 +1,8 @@
 class AppConstants {
   // ============================================
-  // 🌐 API CONFIGURATION
+  // 🌐 PRODUCTION URL - RENDER.COM
   // ============================================
-  // PRODUCTION: Use your deployed backend URL
-  // Example: 'https://your-app.onrender.com/api'
-  // 
-  // LOCAL TESTING: Use your computer's IP
-  // Example: 'http://192.168.1.100:3001/api'
-  //
-  // NGROK (Temporary): Use ngrok URL
-  // Example: 'https://abc123.ngrok.io/api'
-  // ============================================
-  
-  static const String baseUrl = 'http://localhost:3001/api';
-  
-  // ⚠️ CHANGE THIS BEFORE BUILDING FOR PRODUCTION ⚠️
-  // Uncomment one of these based on your setup:
-  
-  // For Render.com deployment:
-  // static const String baseUrl = 'https://marketplace-backend.onrender.com/api';
-  
-  // For Railway deployment:
-  // static const String baseUrl = 'https://your-app.railway.app/api';
-  
-  // For local network testing (replace with your IP):
-  // static const String baseUrl = 'http://192.168.1.100:3001/api';
-  
-  // For ngrok testing:
-  // static const String baseUrl = 'https://your-ngrok-url.ngrok.io/api';
+  static const String baseUrl = 'https://instantpick-backend.onrender.com/api';
   
   // API Endpoints
   static const String authUrl = '$baseUrl/auth';

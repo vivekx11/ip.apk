@@ -12,6 +12,11 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isLoggedIn => _currentOwner != null;
   ShopOwnerModel? get currentOwner => _currentOwner;
+  
+  // User getter for compatibility
+  Map<String, dynamic>? get user => _currentOwner != null 
+      ? {'id': _currentOwner!.id, 'phoneNumber': _currentOwner!.phoneNumber}
+      : null;
 
   void setLoading(bool loading) {
     _isLoading = loading;

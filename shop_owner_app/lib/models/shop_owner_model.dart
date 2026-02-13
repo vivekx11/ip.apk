@@ -7,6 +7,7 @@ class ShopOwnerModel {
   final String? shopName;
   final bool isApproved;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   ShopOwnerModel({
     required this.id,
@@ -15,20 +16,26 @@ class ShopOwnerModel {
     this.email,
     this.shopId,
     this.shopName,
-    required this.isApproved,
+    this.isApproved = false,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory ShopOwnerModel.fromJson(Map<String, dynamic> json) {
     return ShopOwnerModel(
       id: json['_id'] ?? json['id'],
-      phoneNumber: json['phoneNumber'],
+      phoneNumber: json['phoneNumber'] ?? '',
       name: json['name'],
       email: json['email'],
       shopId: json['shopId'],
       shopName: json['shopName'],
       isApproved: json['isApproved'] ?? false,
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null 
+          ? DateTime.parse(json['updatedAt']) 
+          : DateTime.now(),
     );
   }
 
@@ -42,6 +49,31 @@ class ShopOwnerModel {
       'shopName': shopName,
       'isApproved': isApproved,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
+  }
+
+  ShopOwnerModel copyWith({
+    String? id,
+    String? phoneNumber,
+    String? name,
+    String? email,
+    String? shopId,
+    String? shopName,
+    bool? isApproved,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ShopOwnerModel(
+      id: id ?? this.id,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      shopId: shopId ?? this.shopId,
+      shopName: shopName ?? this.shopName,
+      isApproved: isApproved ?? this.isApproved,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 }

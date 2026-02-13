@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/order_model.dart';
-import '../services/order_service.dart';
+import '../services/firebase_service.dart';
 
 class OrderProvider extends ChangeNotifier {
-  final OrderService _orderService = OrderService();
+  final FirebaseService _firebaseService = FirebaseService();
   
   bool _isLoading = false;
   String? _error;
@@ -29,20 +29,24 @@ class OrderProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadOrders(String shopId) async {
+  Future<void> loadShopOrders(String shopId) async {
     setLoading(true);
     setError(null);
 
     try {
-      _orders = await _orderService.getShopOrders(shopId);
+      _orders = await _firebaseService.getShopOrders(shopId);
       
-      // Categorize orders by status
       _pendingOrders = _orders.where((order) => order.status == 'pending').toList();
-      _acceptedOrders = _orders.where((order) => order.status == 'preparing' || order.status == 'ready').toList();
+      _acceptedOrders = _orders.where((order) => 
+        order.status == 'accepted' || order.status == 'ready').toList();
       _completedOrders = _orders.where((order) => order.status == 'completed').toList();
       
     } catch (e) {
       setError(e.toString());
+      _orders = [];
+      _pendingOrders = [];
+      _acceptedOrders = [];
+      _completedOrders = [];
     } finally {
       setLoading(false);
     }
@@ -50,32 +54,49 @@ class OrderProvider extends ChangeNotifier {
 
   Future<void> updateOrderStatus(String orderId, String status) async {
     try {
-      await _orderService.updateOrderStatus(orderId, status);
-      // Reload orders to get updated data
-      final shopId = _orders.firstWhere((order) => order.id == orderId).shopId;
-      await loadOrders(shopId);
+      await _firebaseService.updateOrderStatus(orderId, status);
+      if (_orders.isNotEmpty) {
+        final shopId = _orders.first.shopId;
+        await loadShopOrders(shopId);
+      }
     } catch (e) {
       setError(e.toString());
+      rethrow;
     }
   }
 
-  Future<OrderModel?> verifyPickupCode(String code) async {
+  Future<OrderModel?> verifyPickupCode(String pickupCode) async {
     try {
-      return await _orderService.verifyPickupCode(code);
+      return await _firebaseService.verifyPickupCode(pickupCode);
     } catch (e) {
       setError(e.toString());
       return null;
     }
   }
 
-  Future<void> completeOrder(String orderId) async {
+  Future<OrderModel?> fetchOrderById(String orderId) async {
+    setLoading(true);
+    setError(null);
     try {
-      await _orderService.completeOrder(orderId);
-      // Reload orders to get updated data
-      final shopId = _orders.firstWhere((order) => order.id == orderId).shopId;
-      await loadOrders(shopId);
+      return await _firebaseService.getOrderById(orderId);
     } catch (e) {
       setError(e.toString());
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  Future<void> completeOrder(String orderId) async {
+    try {
+      await _firebaseService.completeOrder(orderId);
+      if (_orders.isNotEmpty) {
+        final shopId = _orders.first.shopId;
+        await loadShopOrders(shopId);
+      }
+    } catch (e) {
+      setError(e.toString());
+      rethrow;
     }
   }
 }

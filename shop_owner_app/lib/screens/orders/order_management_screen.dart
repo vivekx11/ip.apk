@@ -33,7 +33,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
   void _loadOrders() {
     final orderProvider = Provider.of<OrderProvider>(context, listen: false);
     // TODO: Get actual shop ID from user session
-    orderProvider.loadOrders('shop1');
+    orderProvider.loadShopOrders('shop1');
   }
 
   @override

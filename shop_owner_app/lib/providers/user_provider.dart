@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/shop_owner_model.dart';
 
 class UserProvider extends ChangeNotifier {
   String? _username;
   bool _isLoading = false;
+  ShopOwnerModel? _currentOwner;
 
   String? get username => _username;
   bool get isLoading => _isLoading;
   bool get hasUsername => _username != null && _username!.isNotEmpty;
+  ShopOwnerModel? get currentOwner => _currentOwner;
+
+  void setUser(ShopOwnerModel owner) {
+    _currentOwner = owner;
+    _username = owner.name;
+    notifyListeners();
+  }
 
   Future<void> loadUsername() async {
     _isLoading = true;

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 
@@ -23,22 +25,15 @@ class OrderConfirmationScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Success Icon
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle,
-                size: 60,
-                color: Colors.green,
-              ),
+            // Success Animation
+            Lottie.network(
+              'https://lottie.host/cbca94fa-7450-424a-81f1-e37769992d95/6pS8Qz7N3q.json',
+              width: 150,
+              height: 150,
+              repeat: false,
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Success Message
             const Text(
@@ -54,7 +49,7 @@ class OrderConfirmationScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             const Text(
-              'Your order has been placed. Use the pickup code below when you visit the shop.',
+              'Your order has been placed. Use the QR code or pickup code below for verification.',
               style: TextStyle(
                 fontSize: 16,
                 color: AppTheme.darkGrey,
@@ -64,65 +59,74 @@ class OrderConfirmationScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // Pickup Code Card
+            // Pickup & QR Code Card
             Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 12,
+              shadowColor: AppTheme.primaryPink.withOpacity(0.4),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryPink,
-                      AppTheme.primaryPink.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppTheme.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppTheme.softPink, width: 2),
                 ),
                 child: Column(
                   children: [
                     const Text(
-                      'Your Pickup Code',
+                      'Scan to Verify Pickup',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.white,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryPink,
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    QrImageView(
+                      data: order.id,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                      foregroundColor: AppTheme.darkGrey,
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(),
                     const SizedBox(height: 16),
+                    const Text(
+                      'Manual Pickup Code',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.darkGrey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
-                        vertical: 16,
+                        vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.white,
+                        color: AppTheme.softPink,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         order.pickupCode,
                         style: const TextStyle(
-                          fontSize: 36,
+                          fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: AppTheme.primaryPink,
-                          letterSpacing: 8,
+                          letterSpacing: 4,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
+                    const SizedBox(height: 12),
+                    TextButton.icon(
                       onPressed: () => _copyToClipboard(context),
-                      icon: const Icon(Icons.copy, size: 18),
+                      icon: const Icon(Icons.copy, size: 16),
                       label: const Text('Copy Code'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.white,
+                      style: TextButton.styleFrom(
                         foregroundColor: AppTheme.primaryPink,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
                       ),
                     ),
                   ],

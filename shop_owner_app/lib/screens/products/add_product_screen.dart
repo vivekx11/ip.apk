@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
-import '../../services/photo_upload_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/shop_provider.dart';
+import '../../services/image_upload_service.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -19,12 +21,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
+  final _categoryController = TextEditingController();
 
-  final PhotoUploadService _photoService = PhotoUploadService();
+  final ImageUploadService _uploadService = ImageUploadService();
   List<XFile> _selectedImages = [];
-  List<String> _uploadedImageUrls = [];
   bool _isUploading = false;
-  double _uploadProgress = 0.0;
+  String? _uploadedImageUrl;
 
   @override
   void dispose() {
@@ -32,27 +34,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _stockController.dispose();
+    _categoryController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImages() async {
     try {
-      final ImagePicker picker = ImagePicker();
-      final List<XFile> images = await picker.pickMultiImage(
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 80,
-      );
-      
-      if (images.isNotEmpty) {
+      final XFile? image = await _uploadService.pickImageFromGallery();
+      if (image != null) {
         setState(() {
-          _selectedImages.addAll(images);
+          _selectedImages = [image]; // Only one image for now
         });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error picking images: $e'),
+          content: Text('Error picking image: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -61,10 +58,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Future<void> _pickImageFromCamera() async {
     try {
-      final XFile? image = await _photoService.pickImageFromCamera();
+      final XFile? image = await _uploadService.pickImageFromCamera();
       if (image != null) {
         setState(() {
-          _selectedImages.add(image);
+          _selectedImages = [image]; // Only one image for now
         });
       }
     } catch (e) {
@@ -79,83 +76,130 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   void _removeImage(int index) {
     setState(() {
-      _selectedImages.removeAt(index);
+      _selectedImages.clear();
+      _uploadedImageUrl = null;
     });
   }
 
-  Future<void> _uploadImages() async {
-    if (_selectedImages.isEmpty) return;
-
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final shopName = userProvider.username ?? 'Unknown Shop';
-    final productName = _nameController.text.trim();
-
-    setState(() {
-      _isUploading = true;
-      _uploadProgress = 0.0;
-    });
-
-    try {
-      final List<String> urls = await _photoService.uploadMultipleProductImages(
-        imageFiles: _selectedImages,
-        shopName: shopName,
-        productName: productName,
-        onProgress: (index, progress) {
-          setState(() {
-            _uploadProgress = (index + progress) / _selectedImages.length;
-          });
-        },
-      );
-
-      setState(() {
-        _uploadedImageUrls = urls;
-        _isUploading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${urls.length} images uploaded successfully!'),
-          backgroundColor: AppTheme.successGreen,
-        ),
-      );
-    } catch (e) {
-      setState(() {
-        _isUploading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error uploading images: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  Future<void> _saveProduct() async {
+  Future<void> _uploadAndSaveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_selectedImages.isNotEmpty && _uploadedImageUrls.isEmpty) {
+    if (_selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please upload images first'),
+          content: Text('Please select an image'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
 
-    // Here you would typically save the product to your database
-    // For now, we'll just show a success message
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final shopProvider = Provider.of<ShopProvider>(context, listen: false);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Product added successfully!'),
-        backgroundColor: AppTheme.successGreen,
-      ),
-    );
+    // Get owner ID - CRITICAL for shop identification
+    final ownerId = authProvider.user?['phoneNumber'] ?? 
+                    authProvider.user?['id'] ?? 
+                    userProvider.currentOwner?.id;
+    
+    if (ownerId == null || ownerId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Owner ID not found. Please login again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    final shopName = userProvider.username ?? 'My Shop';
+    
+    // Get shopId - MUST have this before uploading
+    String? shopId = shopProvider.currentShop?['_id'] ?? shopProvider.currentShop?['id'];
+    
+    // If no shopId, try to load it
+    if (shopId == null || shopId.isEmpty) {
+      try {
+        print('🔍 Loading shop for owner: $ownerId');
+        await shopProvider.loadShopByOwnerId(ownerId);
+        shopId = shopProvider.currentShop?['_id'] ?? shopProvider.currentShop?['id'];
+      } catch (e) {
+        print('⚠️ Could not load shop: $e');
+      }
+    }
 
-    Navigator.of(context).pop();
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      print('🚀 Starting product upload...');
+      print('📋 Owner ID: $ownerId');
+      print('🏪 Shop ID: $shopId');
+      print('🏷️ Shop Name: $shopName');
+      
+      // Validate we have required data
+      if (shopId == null || shopId.isEmpty) {
+        throw Exception('Shop ID not found. Backend will auto-create shop using ownerId.');
+      }
+      
+      final response = await _uploadService.uploadProduct(
+        imageFile: _selectedImages[0],
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        price: double.parse(_priceController.text.trim()),
+        shopId: shopId, // CRITICAL: Send shopId
+        shopName: shopName,
+        ownerId: ownerId, // CRITICAL: Send ownerId for auto-shop creation
+        category: _categoryController.text.trim().isNotEmpty 
+            ? _categoryController.text.trim() 
+            : 'General',
+        stock: int.parse(_stockController.text.trim()),
+        unit: 'piece',
+      );
+
+      setState(() {
+        _isUploading = false;
+      });
+
+      if (response['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Product uploaded successfully!'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+        Navigator.of(context).pop(true);
+      } else {
+        throw Exception(response['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      setState(() {
+        _isUploading = false;
+      });
+
+      print('❌ Upload error: $e');
+      
+      String errorMessage = 'Upload failed';
+      if (e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')) {
+        errorMessage = 'Cannot connect to server. Check internet connection.';
+      } else if (e.toString().contains('TimeoutException')) {
+        errorMessage = 'Connection timeout. Server is slow or unavailable.';
+      } else if (e.toString().contains('Shop ID not found')) {
+        errorMessage = 'Shop not found. Please restart app and login again.';
+      } else {
+        errorMessage = e.toString().replaceAll('Exception: ', '');
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
+        ),
+      );
+    }
   }
 
   @override
@@ -168,11 +212,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
         foregroundColor: AppTheme.white,
         actions: [
           TextButton(
-            onPressed: _saveProduct,
-            child: const Text(
-              'Save',
+            onPressed: _isUploading ? null : _uploadAndSaveProduct,
+            child: Text(
+              _isUploading ? 'Uploading...' : 'Save',
               style: TextStyle(
-                color: AppTheme.white,
+                color: _isUploading ? Colors.grey : AppTheme.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -228,102 +272,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       
                       // Selected images grid
                       if (_selectedImages.isNotEmpty) ...[
-                        SizedBox(
-                          height: 120,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _selectedImages.length,
-                            itemBuilder: (context, index) {
-                              return Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                child: Stack(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.file(
-                                        File(_selectedImages[index].path),
-                                        width: 120,
-                                        height: 120,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 4,
-                                      right: 4,
-                                      child: GestureDetector(
-                                        onTap: () => _removeImage(index),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(4),
-                                          decoration: const BoxDecoration(
-                                            color: Colors.red,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(
+                            File(_selectedImages[0].path),
+                            width: double.infinity,
+                            height: 200,
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Upload button and progress
-                        if (_uploadedImageUrls.length != _selectedImages.length) ...[
-                          ElevatedButton.icon(
-                            onPressed: _isUploading ? null : _uploadImages,
-                            icon: _isUploading 
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
-                                  )
-                                : const Icon(Icons.cloud_upload),
-                            label: Text(_isUploading ? 'Uploading...' : 'Upload Images'),
-                          ),
-                          
-                          if (_isUploading) ...[
-                            const SizedBox(height: 8),
-                            LinearProgressIndicator(
-                              value: _uploadProgress,
-                              backgroundColor: AppTheme.lightGrey,
-                              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryIndigo),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${(_uploadProgress * 100).toInt()}% uploaded',
-                              style: const TextStyle(fontSize: 12),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ],
-                        
-                        if (_uploadedImageUrls.isNotEmpty) ...[
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppTheme.successGreen.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.check_circle, color: AppTheme.successGreen),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${_uploadedImageUrls.length} images uploaded to Firebase',
-                                  style: const TextStyle(color: AppTheme.successGreen),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        const SizedBox(height: 8),
+                        TextButton.icon(
+                          onPressed: () => _removeImage(0),
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          label: const Text('Remove Image', style: TextStyle(color: Colors.red)),
+                        ),
                       ],
                     ],
                   ),
@@ -380,6 +343,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           }
                           return null;
                         },
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      TextFormField(
+                        controller: _categoryController,
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                          hintText: 'e.g., Electronics, Food, etc.',
+                          prefixIcon: Icon(Icons.category),
+                        ),
                       ),
                       
                       const SizedBox(height: 16),

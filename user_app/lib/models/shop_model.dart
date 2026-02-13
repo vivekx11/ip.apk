@@ -35,6 +35,20 @@ class Shop {
     );
   }
 
+  factory Shop.fromFirestore(Map<String, dynamic> data, String id) {
+    return Shop(
+      id: id,
+      name: data['name'] ?? '',
+      description: data['description'] ?? '',
+      category: data['category'] ?? '',
+      rating: (data['rating'] ?? 0.0).toDouble(),
+      address: data['address'] ?? '',
+      phone: data['phone'] ?? '',
+      isOpen: data['isActive'] ?? true,
+      imageUrl: data['imageUrl'] ?? '',
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -45,6 +59,19 @@ class Shop {
       'address': address,
       'phone': phone,
       'isOpen': isOpen,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'description': description,
+      'category': category,
+      'rating': rating,
+      'address': address,
+      'phone': phone,
+      'isActive': isOpen,
       'imageUrl': imageUrl,
     };
   }

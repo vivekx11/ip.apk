@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
-import '../auth/username_setup_screen.dart';
+import '../../services/simple_auth_service.dart';
+import '../auth/simple_login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -110,44 +111,12 @@ class ProfileScreen extends StatelessWidget {
                           _showAboutDialog(context);
                         },
                       ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: userProvider.isLoading ? null : () async {
-                            await userProvider.clearUsername();
-                            if (context.mounted) {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                  builder: (context) => const UsernameSetupScreen(),
-                                ),
-                                (route) => false,
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: AppTheme.white,
-                          ),
-                          child: userProvider.isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppTheme.white,
-                                    ),
-                                  ),
-                                )
-                              : const Text(
-                                  'Reset App',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
+                      _buildProfileOption(
+                        icon: Icons.logout,
+                        title: 'Logout',
+                        onTap: () {
+                          _showLogoutDialog(context, userProvider);
+                        },
                       ),
                     ],
                   ),
@@ -156,6 +125,40 @@ class ProfileScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, UserProvider userProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await SimpleAuthService().logout();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const SimpleLoginScreen(),
+                  ),
+                  (route) => false,
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: AppTheme.white,
+            ),
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }

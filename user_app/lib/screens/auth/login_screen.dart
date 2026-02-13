@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../main.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/config/app_config.dart';
 import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -38,16 +37,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final phoneNumber = '+91${_phoneController.text}';
     
-    await authProvider.sendOTP(phoneNumber);
-    
-    if (authProvider.error == null && mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => OTPVerificationScreen(
-            phoneNumber: phoneNumber,
+    try {
+      await authProvider.sendOTP(phoneNumber);
+      
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationScreen(
+              phoneNumber: phoneNumber,
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      // Error is handled by AuthProvider and displayed in UI via Consumer
     }
   }
 

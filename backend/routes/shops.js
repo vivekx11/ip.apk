@@ -2,13 +2,22 @@ const express = require('express');
 const router = express.Router();
 const Shop = require('../models/Shop');
 
-// GET /api/shops - Get all approved shops
+// GET /api/shops - Get all approved shops or by ownerId
 router.get('/', async (req, res) => {
   try {
-    const { category, search, isOpen } = req.query;
+    const { category, search, isOpen, ownerId } = req.query;
     
     // Build query
-    let query = { isActive: true, isApproved: true };
+    let query = {};
+    
+    // If ownerId is provided, search by ownerId (for shop owner app)
+    if (ownerId) {
+      query.ownerId = ownerId;
+    } else {
+      // Otherwise, show only approved shops (for user app)
+      query.isActive = true;
+      query.isApproved = true;
+    }
     
     if (category) {
       query.category = category;
@@ -77,6 +86,7 @@ router.post('/', async (req, res) => {
       address,
       phone,
       ownerName,
+      ownerId,
       imageUrl
     } = req.body;
     
@@ -97,14 +107,27 @@ router.post('/', async (req, res) => {
       });
     }
     
+    // Check if owner already has a shop
+    if (ownerId) {
+      const ownerShop = await Shop.findOne({ ownerId: ownerId });
+      if (ownerShop) {
+        return res.status(409).json({
+          success: false,
+          message: 'Owner already has a registered shop',
+          data: ownerShop
+        });
+      }
+    }
+    
     // Create new shop
     const shop = new Shop({
       name: name.trim(),
       description: description.trim(),
-      category,
+      category: category || 'Other', // Use 'Other' as default instead of 'General'
       address: address.trim(),
       phone: phone.trim(),
       ownerName: ownerName.trim(),
+      ownerId: ownerId || '',
       imageUrl: imageUrl || '',
       isApproved: true // Auto-approve for now
     });
@@ -197,7 +220,7 @@ router.put('/:id/toggle-status', async (req, res) => {
   }
 });
 
-// GET /api/shops/categories - Get all categories
+// GET /api/shops/meta/categories - Get all categories
 router.get('/meta/categories', async (req, res) => {
   try {
     const categories = [
@@ -222,6 +245,32 @@ router.get('/meta/categories', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch categories',
+      error: error.message
+    });
+  }
+});
+
+// GET /api/shops/by-name/:name - Get shop by name
+router.get('/by-name/:name', async (req, res) => {
+  try {
+    const shop = await Shop.findOne({ name: req.params.name }).select('-__v');
+    
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: shop
+    });
+  } catch (error) {
+    console.error('Error fetching shop by name:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch shop',
       error: error.message
     });
   }

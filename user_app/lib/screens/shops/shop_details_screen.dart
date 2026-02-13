@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/shop_model.dart';
 import '../../models/product_model.dart';
 import '../../providers/shop_provider.dart';
+import '../../providers/cart_provider.dart';
 import '../../services/network_service.dart';
 import '../orders/place_order_screen.dart';
 
@@ -321,102 +322,164 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: product.isAvailable ? () => _toggleProductSelection(product) : null,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: isSelected
-                ? Border.all(color: AppTheme.primaryPink, width: 2)
-                : null,
-          ),
-          child: Row(
-            children: [
-              // Product Image/Icon
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: AppTheme.lightGrey,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.shopping_bag,
-                  size: 30,
-                  color: AppTheme.primaryPink,
-                ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: isSelected
+              ? Border.all(color: AppTheme.primaryPink, width: 2)
+              : null,
+        ),
+        child: Row(
+          children: [
+            // Product Image/Icon
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: AppTheme.lightGrey,
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 16),
+              child: product.imageUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        product.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.shopping_bag,
+                            size: 30,
+                            color: AppTheme.primaryPink,
+                          );
+                        },
+                      ),
+                    )
+                  : const Icon(
+                      Icons.shopping_bag,
+                      size: 30,
+                      color: AppTheme.primaryPink,
+                    ),
+            ),
+            const SizedBox(width: 16),
 
-              // Product Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: product.isAvailable ? AppTheme.darkGrey : AppTheme.lightGrey,
-                      ),
+            // Product Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: product.isAvailable ? AppTheme.darkGrey : AppTheme.lightGrey,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      product.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: product.isAvailable ? AppTheme.darkGrey : AppTheme.lightGrey,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    product.description,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: product.isAvailable ? AppTheme.darkGrey : AppTheme.lightGrey,
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text(
-                          '₹${product.price.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: product.isAvailable ? AppTheme.primaryPink : AppTheme.lightGrey,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        '₹${product.price.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: product.isAvailable ? AppTheme.primaryPink : AppTheme.lightGrey,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (!product.isAvailable)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            'Out of Stock',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
-                        const Spacer(),
-                        if (!product.isAvailable)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Out of Stock',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        if (product.isAvailable && isSelected)
-                          const Icon(
-                            Icons.check_circle,
-                            color: AppTheme.primaryPink,
-                            size: 24,
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            // Add to Cart Button
+            const SizedBox(width: 8),
+            Column(
+              children: [
+                if (isSelected)
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppTheme.primaryPink,
+                    size: 24,
+                  ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: product.isAvailable
+                      ? () {
+                          // Convert Product to ProductModel for cart
+                          final productModel = ProductModel(
+                            id: product.id,
+                            name: product.name,
+                            description: product.description,
+                            price: product.price,
+                            shopId: product.shopId,
+                            shopName: product.shopName,
+                            imageUrls: product.imageUrl.isNotEmpty ? [product.imageUrl] : [],
+                            category: product.category,
+                            isAvailable: product.isAvailable,
+                            stock: 0,
+                            createdAt: DateTime.now(),
+                          );
+                          
+                          Provider.of<CartProvider>(context, listen: false)
+                              .addItem(productModel);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${product.name} added to cart'),
+                              duration: const Duration(seconds: 1),
+                              backgroundColor: AppTheme.primaryPink,
+                            ),
+                          );
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryPink,
+                    foregroundColor: AppTheme.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    minimumSize: const Size(80, 36),
+                  ),
+                  child: const Text(
+                    'Add to Cart',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -427,8 +490,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => PlaceOrderScreen(
-          shop: widget.shop,
-          selectedProducts: _selectedProducts,
+          shopId: widget.shop.id,
         ),
       ),
     );

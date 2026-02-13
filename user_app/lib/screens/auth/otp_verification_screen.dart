@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../main.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/config/app_config.dart';
 import '../home/main_screen.dart';
 
 class OTPVerificationScreen extends StatefulWidget {

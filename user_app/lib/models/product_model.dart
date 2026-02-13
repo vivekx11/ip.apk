@@ -6,7 +6,7 @@ class Product {
   final String shopId;
   final String shopName;
   final String category;
-  final String imageUrl;
+  final List<String> imageUrls;
   final bool isAvailable;
 
   Product({
@@ -17,20 +17,30 @@ class Product {
     required this.shopId,
     required this.shopName,
     required this.category,
-    required this.imageUrl,
+    required this.imageUrls,
     required this.isAvailable,
   });
 
+  String get imageUrl => imageUrls.isNotEmpty ? imageUrls.first : '';
+
   factory Product.fromJson(Map<String, dynamic> json) {
+    // Handle both imageUrl (string) and imageUrls (array)
+    List<String> images = [];
+    if (json['imageUrls'] != null && json['imageUrls'] is List) {
+      images = List<String>.from(json['imageUrls']);
+    } else if (json['imageUrl'] != null && json['imageUrl'].toString().isNotEmpty) {
+      images = [json['imageUrl'].toString()];
+    }
+
     return Product(
       id: json['_id'] ?? json['id'],
-      name: json['name'],
-      description: json['description'],
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
       price: (json['price'] ?? 0.0).toDouble(),
-      shopId: json['shopId'],
+      shopId: json['shopId'] ?? '',
       shopName: json['shopName'] ?? '',
       category: json['category'] ?? 'General',
-      imageUrl: json['imageUrl'] ?? '',
+      imageUrls: images,
       isAvailable: json['isAvailable'] ?? true,
     );
   }
@@ -44,9 +54,26 @@ class Product {
       'shopId': shopId,
       'shopName': shopName,
       'category': category,
-      'imageUrl': imageUrl,
+      'imageUrls': imageUrls,
       'isAvailable': isAvailable,
     };
+  }
+
+  // Convert to ProductModel for cart
+  ProductModel toProductModel() {
+    return ProductModel(
+      id: id,
+      name: name,
+      description: description,
+      price: price,
+      shopId: shopId,
+      shopName: shopName,
+      imageUrls: imageUrls,
+      category: category,
+      isAvailable: isAvailable,
+      stock: 100,
+      createdAt: DateTime.now(),
+    );
   }
 }
 

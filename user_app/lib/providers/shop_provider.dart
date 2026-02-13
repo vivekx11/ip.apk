@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/shop_model.dart';
 import '../models/product_model.dart';
-import '../services/shop_service.dart';
+import '../services/firebase_service.dart';
 
 class ShopProvider extends ChangeNotifier {
-  final ShopService _shopService = ShopService();
+  final FirebaseService _firebaseService = FirebaseService();
   
   bool _isLoading = false;
   String? _error;
@@ -34,10 +34,9 @@ class ShopProvider extends ChangeNotifier {
     setError(null);
 
     try {
-      _shops = await _shopService.getShops();
+      _shops = await _firebaseService.getShops();
     } catch (e) {
       setError(e.toString());
-      // Keep empty list if error occurs
       _shops = [];
     } finally {
       setLoading(false);
@@ -46,7 +45,7 @@ class ShopProvider extends ChangeNotifier {
 
   Future<void> loadShopProducts(String shopId) async {
     try {
-      final products = await _shopService.getShopProducts(shopId);
+      final products = await _firebaseService.getShopProducts(shopId);
       _shopProducts[shopId] = products;
       notifyListeners();
     } catch (e) {
@@ -57,7 +56,7 @@ class ShopProvider extends ChangeNotifier {
 
   Future<Shop?> getShopById(String shopId) async {
     try {
-      return await _shopService.getShopById(shopId);
+      return await _firebaseService.getShopById(shopId);
     } catch (e) {
       setError(e.toString());
       return null;

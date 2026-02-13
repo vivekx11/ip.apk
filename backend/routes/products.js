@@ -85,7 +85,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/products - Create new product
+// POST /api/products - Create new product (with auto shop creation)
 router.post('/', async (req, res) => {
   try {
     const {
@@ -94,6 +94,7 @@ router.post('/', async (req, res) => {
       price,
       shopId,
       shopName,
+      ownerId,
       category,
       imageUrls,
       stock,
@@ -101,11 +102,13 @@ router.post('/', async (req, res) => {
       tags
     } = req.body;
     
-    // Validation
-    if (!name || !description || !price || !shopId || !shopName) {
+    console.log('📦 Product creation request:', { name, shopName, ownerId, shopId, price });
+    
+    // Validation - only basic fields required
+    if (!name || !description || !price) {
       return res.status(400).json({
         success: false,
-        message: 'All required fields must be provided'
+        message: 'Name, description, and price are required'
       });
     }
     
@@ -116,21 +119,89 @@ router.post('/', async (req, res) => {
       });
     }
     
+    let finalShopId = shopId;
+    let finalShopName = shopName || 'My Shop';
+    
+    // CRITICAL: Ensure we have a valid shopId
+    // Priority: 1) Use provided shopId, 2) Find by ownerId, 3) Create new shop
+    if (!finalShopId || finalShopId === '' || finalShopId === 'unknown') {
+      if (ownerId) {
+        const Shop = require('../models/Shop');
+        
+        // Try to find existing shop by ownerId
+        let ownerShop = await Shop.findOne({ ownerId: ownerId });
+        
+        if (!ownerShop) {
+          // Create new shop for this owner
+          console.log('🏪 Creating new shop for owner:', ownerId);
+          ownerShop = new Shop({
+            name: shopName || `${ownerId}'s Shop`,
+            description: 'My shop selling quality products',
+            category: 'Other', // Use 'Other' instead of 'General'
+            address: 'Local Area',
+            phone: ownerId,
+            ownerName: shopName || 'Shop Owner',
+            ownerId: ownerId,
+            isApproved: true,
+            isActive: true
+          });
+          await ownerShop.save();
+          console.log('✅ New shop created:', ownerShop._id);
+        } else {
+          console.log('✅ Found existing shop:', ownerShop._id);
+        }
+        
+        finalShopId = ownerShop._id.toString();
+        finalShopName = ownerShop.name;
+      } else {
+        // No ownerId and no shopId - cannot create product
+        return res.status(400).json({
+          success: false,
+          message: 'shopId or ownerId is required to create product'
+        });
+      }
+    } else {
+      // Verify shopId exists in database
+      const Shop = require('../models/Shop');
+      const mongoose = require('mongoose');
+      
+      if (mongoose.Types.ObjectId.isValid(finalShopId)) {
+        const shop = await Shop.findById(finalShopId);
+        if (shop) {
+          finalShopName = shop.name;
+          console.log('✅ Verified shop exists:', finalShopId);
+        } else {
+          console.log('⚠️ Shop not found, will use provided shopId anyway');
+        }
+      }
+    }
+    
+    // Final validation
+    if (!finalShopId || finalShopId === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Could not determine shopId for product'
+      });
+    }
+    
     // Create product
     const product = new Product({
       name: name.trim(),
       description: description.trim(),
       price: parseFloat(price),
-      shopId,
-      shopName: shopName.trim(),
+      shopId: finalShopId,
+      shopName: finalShopName,
       category: category || 'General',
       imageUrls: imageUrls || [],
       stock: stock || 0,
       unit: unit || 'piece',
-      tags: tags || []
+      tags: tags || [],
+      isAvailable: true
     });
     
     await product.save();
+    
+    console.log('✅ Product created successfully:', product._id, 'for shop:', finalShopId);
     
     res.status(201).json({
       success: true,
@@ -138,7 +209,7 @@ router.post('/', async (req, res) => {
       data: product
     });
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error('❌ Error creating product:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create product',
@@ -157,7 +228,9 @@ router.put('/:id', async (req, res) => {
     delete updates.__v;
     delete updates.createdAt;
     delete updates.updatedAt;
-    delete updates.shopId; // Shop ID should not be changed
+    
+    // Allow shopId update for fixing existing products
+    // Don't delete shopId from updates
     
     // Validate price if provided
     if (updates.price !== undefined && updates.price < 0) {
@@ -167,10 +240,11 @@ router.put('/:id', async (req, res) => {
       });
     }
     
+    // Use findByIdAndUpdate with validation disabled for shopId fix
     const product = await Product.findByIdAndUpdate(
       req.params.id,
-      updates,
-      { new: true, runValidators: true }
+      { $set: updates },
+      { new: true, runValidators: false } // Disable validators to allow fixing shopId
     ).select('-__v');
     
     if (!product) {

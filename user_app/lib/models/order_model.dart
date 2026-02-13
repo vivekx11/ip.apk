@@ -60,6 +60,28 @@ class Order {
     );
   }
 
+  factory Order.fromFirestore(Map<String, dynamic> data, String id) {
+    return Order(
+      id: id,
+      userId: data['userId'] ?? '',
+      shopId: data['shopId'] ?? '',
+      shopName: data['shopName'] ?? '',
+      shopAddress: data['shopAddress'] ?? '',
+      products: (data['products'] as List? ?? [])
+          .map((product) => Product.fromJson(product as Map<String, dynamic>))
+          .toList(),
+      totalAmount: (data['totalAmount'] ?? 0.0).toDouble(),
+      pickupCode: data['pickupCode'] ?? '',
+      status: OrderStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == data['status'],
+        orElse: () => OrderStatus.placed,
+      ),
+      notes: data['notes'],
+      createdAt: (data['createdAt'] as dynamic).toDate(),
+      expiresAt: (data['expiresAt'] as dynamic).toDate(),
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -74,6 +96,22 @@ class Order {
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
       'expiresAt': expiresAt.toIso8601String(),
+    };
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'userId': userId,
+      'shopId': shopId,
+      'shopName': shopName,
+      'shopAddress': shopAddress,
+      'products': products.map((product) => product.toJson()).toList(),
+      'totalAmount': totalAmount,
+      'pickupCode': pickupCode,
+      'status': status.toString().split('.').last,
+      'notes': notes,
+      'createdAt': createdAt,
+      'expiresAt': expiresAt,
     };
   }
 

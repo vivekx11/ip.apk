@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/shop_provider.dart';
 import 'dashboard_screen.dart';
 import 'products_screen.dart';
 import '../orders/order_management_screen.dart';
@@ -21,6 +24,27 @@ class _MainScreenState extends State<MainScreen> {
     const OrderManagementScreen(),
     const ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadShopData();
+  }
+
+  Future<void> _loadShopData() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final shopProvider = Provider.of<ShopProvider>(context, listen: false);
+    
+    final ownerId = userProvider.currentOwner?.id;
+    if (ownerId != null && ownerId.isNotEmpty) {
+      try {
+        await shopProvider.loadShopByOwnerId(ownerId);
+        print('✅ Shop loaded: ${shopProvider.currentShop?['name']}');
+      } catch (e) {
+        print('⚠️ Could not load shop: $e');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
