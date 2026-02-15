@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 import '../../providers/order_provider.dart';
 import '../../services/network_service.dart';
+import '../../services/simple_auth_service.dart';
 import 'pickup_code_verification_screen.dart';
 
 class OrderManagementScreen extends StatefulWidget {
@@ -30,10 +31,28 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
     super.dispose();
   }
 
-  void _loadOrders() {
+  void _loadOrders() async {
     final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    // TODO: Get actual shop ID from user session
-    orderProvider.loadShopOrders('shop1');
+    final authService = SimpleAuthService();
+    
+    // Get shopId from auth service
+    final shopId = authService.shopId;
+    
+    if (shopId == null || shopId.isEmpty) {
+      print('❌ No shopId found. Please login again.');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Shop not found. Please login again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+    
+    print('📋 Loading orders for shop: $shopId');
+    orderProvider.loadShopOrders(shopId);
   }
 
   @override
@@ -385,30 +404,12 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
               child: ElevatedButton.icon(
                 onPressed: () => _markReady(order),
                 icon: const Icon(Icons.check, size: 18),
-                label: const Text('Mark Ready'),
+                label: const Text('Complete Order'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryIndigo,
+                  backgroundColor: AppTheme.successGreen,
                   foregroundColor: AppTheme.white,
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PickupCodeVerificationScreen(
-                      prefilledCode: order.orderToken,
-                    ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.warningOrange,
-                foregroundColor: AppTheme.white,
-              ),
-              child: const Icon(Icons.qr_code_scanner),
             ),
           ],
         );
@@ -454,7 +455,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
     }
 
     try {
-      await orderProvider.updateOrderStatus(order.id, 'preparing');
+      await orderProvider.updateOrderStatus(order.id, 'Accepted');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Order #${order.id} accepted'),
@@ -486,17 +487,17 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
     }
 
     try {
-      await orderProvider.updateOrderStatus(order.id, 'rejected');
+      await orderProvider.updateOrderStatus(order.id, 'Cancelled');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Order #${order.id} rejected'),
+          content: Text('Order #${order.id} cancelled'),
           backgroundColor: Colors.red,
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to reject order: ${e.toString()}'),
+          content: Text('Failed to cancel order: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -504,34 +505,73 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
   }
 
   void _markReady(OrderModel order) async {
-    final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-    final networkService = Provider.of<NetworkService>(context, listen: false);
+    // This button will now complete the order directly
+    // Show dialog to enter PIN
+    final pinController = TextEditingController();
     
-    if (networkService.isOffline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No internet connection. Please check your network.'),
-          backgroundColor: Colors.red,
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Complete Order'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ask customer for their 4-digit PIN:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pinController,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              decoration: const InputDecoration(
+                labelText: 'Enter PIN',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
         ),
-      );
-      return;
-    }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Verify & Complete'),
+          ),
+        ],
+      ),
+    );
 
-    try {
-      await orderProvider.updateOrderStatus(order.id, 'ready');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Order #${order.id} marked as ready for pickup'),
-          backgroundColor: AppTheme.primaryIndigo,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to mark order ready: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (confirmed == true && pinController.text.length == 4) {
+      final orderProvider = Provider.of<OrderProvider>(context, listen: false);
+      final networkService = Provider.of<NetworkService>(context, listen: false);
+      
+      if (networkService.isOffline) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Please check your network.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      try {
+        await orderProvider.verifyPinAndComplete(order.id, pinController.text);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Order #${order.id} completed successfully!'),
+            backgroundColor: AppTheme.successGreen,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to complete order: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

@@ -2,11 +2,10 @@ import 'cart_item_model.dart';
 import 'product_model.dart';
 
 enum OrderStatus {
-  placed,
-  accepted,
-  ready,
-  completed,
-  cancelled,
+  Pending,
+  Accepted,
+  Completed,
+  Cancelled,
 }
 
 class Order {
@@ -15,13 +14,16 @@ class Order {
   final String shopId;
   final String shopName;
   final String shopAddress;
-  final List<Product> products;
+  final List<OrderItem> items;
   final double totalAmount;
-  final String pickupCode;
+  final String pickupPin; // 4-digit PIN
+  final String orderNumber; // Formatted order number
   final OrderStatus status;
+  final String customerName;
   final String? notes;
   final DateTime createdAt;
-  final DateTime expiresAt;
+  final DateTime? acceptedAt;
+  final DateTime? completedAt;
 
   Order({
     required this.id,
@@ -29,57 +31,59 @@ class Order {
     required this.shopId,
     required this.shopName,
     required this.shopAddress,
-    required this.products,
+    required this.items,
     required this.totalAmount,
-    required this.pickupCode,
+    required this.pickupPin,
+    required this.orderNumber,
     required this.status,
+    required this.customerName,
     this.notes,
     required this.createdAt,
-    required this.expiresAt,
+    this.acceptedAt,
+    this.completedAt,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
-      id: json['_id'] ?? json['id'],
-      userId: json['userId'],
-      shopId: json['shopId'],
-      shopName: json['shopName'],
-      shopAddress: json['shopAddress'],
-      products: (json['products'] as List)
-          .map((product) => Product.fromJson(product))
+      id: json['_id'] ?? json['id'] ?? '',
+      userId: json['userId'] ?? '',
+      shopId: json['shopId'] is Map ? json['shopId']['_id'] : json['shopId'] ?? '',
+      shopName: json['shopName'] ?? '',
+      shopAddress: json['shopAddress'] ?? '',
+      items: (json['items'] as List? ?? [])
+          .map((item) => OrderItem.fromJson(item))
           .toList(),
       totalAmount: (json['totalAmount'] ?? 0.0).toDouble(),
-      pickupCode: json['pickupCode'],
-      status: OrderStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == json['status'],
-        orElse: () => OrderStatus.placed,
-      ),
+      pickupPin: json['pickupPin'] ?? '',
+      orderNumber: json['orderNumber'] ?? 'ORD${json['_id']?.toString().substring(0, 8).toUpperCase() ?? ''}',
+      status: _parseStatus(json['status']),
+      customerName: json['customerName'] ?? 'Guest',
       notes: json['notes'],
-      createdAt: DateTime.parse(json['createdAt']),
-      expiresAt: DateTime.parse(json['expiresAt']),
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
+          : DateTime.now(),
+      acceptedAt: json['acceptedAt'] != null 
+          ? DateTime.parse(json['acceptedAt']) 
+          : null,
+      completedAt: json['completedAt'] != null 
+          ? DateTime.parse(json['completedAt']) 
+          : null,
     );
   }
 
-  factory Order.fromFirestore(Map<String, dynamic> data, String id) {
-    return Order(
-      id: id,
-      userId: data['userId'] ?? '',
-      shopId: data['shopId'] ?? '',
-      shopName: data['shopName'] ?? '',
-      shopAddress: data['shopAddress'] ?? '',
-      products: (data['products'] as List? ?? [])
-          .map((product) => Product.fromJson(product as Map<String, dynamic>))
-          .toList(),
-      totalAmount: (data['totalAmount'] ?? 0.0).toDouble(),
-      pickupCode: data['pickupCode'] ?? '',
-      status: OrderStatus.values.firstWhere(
-        (e) => e.toString().split('.').last == data['status'],
-        orElse: () => OrderStatus.placed,
-      ),
-      notes: data['notes'],
-      createdAt: (data['createdAt'] as dynamic).toDate(),
-      expiresAt: (data['expiresAt'] as dynamic).toDate(),
-    );
+  static OrderStatus _parseStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return OrderStatus.Pending;
+      case 'accepted':
+        return OrderStatus.Accepted;
+      case 'completed':
+        return OrderStatus.Completed;
+      case 'cancelled':
+        return OrderStatus.Cancelled;
+      default:
+        return OrderStatus.Pending;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -89,48 +93,83 @@ class Order {
       'shopId': shopId,
       'shopName': shopName,
       'shopAddress': shopAddress,
-      'products': products.map((product) => product.toJson()).toList(),
+      'items': items.map((item) => item.toJson()).toList(),
       'totalAmount': totalAmount,
-      'pickupCode': pickupCode,
+      'pickupPin': pickupPin,
+      'orderNumber': orderNumber,
       'status': status.toString().split('.').last,
+      'customerName': customerName,
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
-      'expiresAt': expiresAt.toIso8601String(),
-    };
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'userId': userId,
-      'shopId': shopId,
-      'shopName': shopName,
-      'shopAddress': shopAddress,
-      'products': products.map((product) => product.toJson()).toList(),
-      'totalAmount': totalAmount,
-      'pickupCode': pickupCode,
-      'status': status.toString().split('.').last,
-      'notes': notes,
-      'createdAt': createdAt,
-      'expiresAt': expiresAt,
+      'acceptedAt': acceptedAt?.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
     };
   }
 
   String get statusDisplayName {
     switch (status) {
-      case OrderStatus.placed:
+      case OrderStatus.Pending:
         return 'Order Placed';
-      case OrderStatus.accepted:
+      case OrderStatus.Accepted:
         return 'Accepted by Shop';
-      case OrderStatus.ready:
-        return 'Ready for Pickup';
-      case OrderStatus.completed:
+      case OrderStatus.Completed:
         return 'Completed';
-      case OrderStatus.cancelled:
+      case OrderStatus.Cancelled:
         return 'Cancelled';
     }
   }
 
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
+  String get statusEmoji {
+    switch (status) {
+      case OrderStatus.Pending:
+        return '⏳';
+      case OrderStatus.Accepted:
+        return '✅';
+      case OrderStatus.Completed:
+        return '🎉';
+      case OrderStatus.Cancelled:
+        return '❌';
+    }
+  }
+}
+
+// Order Item model
+class OrderItem {
+  final String productId;
+  final String productName;
+  final double price;
+  final int quantity;
+  final String? productImage;
+
+  OrderItem({
+    required this.productId,
+    required this.productName,
+    required this.price,
+    required this.quantity,
+    this.productImage,
+  });
+
+  factory OrderItem.fromJson(Map<String, dynamic> json) {
+    return OrderItem(
+      productId: json['productId'] ?? '',
+      productName: json['productName'] ?? '',
+      price: (json['price'] ?? 0.0).toDouble(),
+      quantity: json['quantity'] ?? 1,
+      productImage: json['productImage'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'price': price,
+      'quantity': quantity,
+      'productImage': productImage,
+    };
+  }
+
+  double get subtotal => price * quantity;
 }
 
 // Keep the old model for backward compatibility

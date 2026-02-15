@@ -1,55 +1,153 @@
-import 'api_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../core/constants/app_constants.dart';
+import '../models/order_model.dart' as order_model;
+import '../models/cart_item_model.dart';
 
 class OrderService {
-  final ApiService _apiService = ApiService();
+  static final OrderService _instance = OrderService._internal();
+  factory OrderService() => _instance;
+  OrderService._internal();
 
+  static const String baseUrl = AppConstants.baseUrl;
+
+  /// Place a new order
   Future<Map<String, dynamic>> placeOrder({
     required String userId,
     required String shopId,
-    required List<Map<String, dynamic>> items,
+    required List<dynamic> items, // Accept List<Map> or List<CartItemModel>
     required double totalAmount,
     required String customerName,
     String? notes,
   }) async {
     try {
-      final response = await _apiService.post('/orders', {
-        'userId': userId,
-        'shopId': shopId,
-        'items': items,
-        'totalAmount': totalAmount,
-        'customerName': customerName,
-        'notes': notes ?? '',
-      });
-      return response;
+      print('📦 Placing order...');
+      print('User ID: $userId');
+      print('Shop ID: $shopId');
+      print('Items: ${items.length}');
+      print('Total: ₹$totalAmount');
+
+      // Convert items to proper format
+      final orderItems = items.map((item) {
+        if (item is CartItemModel) {
+          return {
+            'productId': item.productId,
+            'productName': item.productName,
+            'price': item.price,
+            'quantity': item.quantity,
+            'productImage': item.imageUrl,
+          };
+        } else if (item is Map) {
+          return {
+            'productId': item['productId'],
+            'productName': item['productName'],
+            'price': item['price'],
+            'quantity': item['quantity'],
+            'productImage': item['imageUrl'] ?? item['productImage'] ?? '',
+          };
+        }
+        throw Exception('Invalid item type');
+      }).toList();
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/orders'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'userId': userId,
+          'shopId': shopId,
+          'items': orderItems,
+          'totalAmount': totalAmount,
+          'customerName': customerName,
+          'notes': notes ?? '',
+        }),
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timeout. Please try again.');
+        },
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          print('✅ Order placed successfully');
+          return data['data'];
+        } else {
+          throw Exception(data['message'] ?? 'Failed to place order');
+        }
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to place order');
+      }
     } catch (e) {
-      throw Exception('Failed to place order: $e');
+      print('❌ Error placing order: $e');
+      rethrow;
     }
   }
 
-  Future<List<Map<String, dynamic>>> getUserOrders(String userId) async {
+  /// Get user orders
+  Future<List<order_model.Order>> getUserOrders(String userId, {int page = 1, int limit = 20}) async {
     try {
-      final response = await _apiService.get('/orders/user/$userId');
-      return List<Map<String, dynamic>>.from(response['data'] ?? []);
+      print('📋 Fetching orders for user: $userId');
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/user/$userId?page=$page&limit=$limit'),
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timeout. Please try again.');
+        },
+      );
+
+      print('Response status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> ordersJson = data['data'];
+          return ordersJson.map((json) => order_model.Order.fromJson(json)).toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to fetch orders');
+        }
+      } else {
+        throw Exception('Failed to fetch orders');
+      }
     } catch (e) {
-      throw Exception('Failed to load orders: $e');
+      print('❌ Error fetching orders: $e');
+      rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> getOrderById(String orderId) async {
+  /// Get order by ID
+  Future<order_model.Order> getOrderById(String orderId) async {
     try {
-      final response = await _apiService.get('/orders/$orderId');
-      return response['data'];
-    } catch (e) {
-      throw Exception('Failed to load order: $e');
-    }
-  }
+      print('🔍 Fetching order: $orderId');
 
-  Future<Map<String, dynamic>> verifyPickupCode(String pickupCode) async {
-    try {
-      final response = await _apiService.get('/orders/verify/$pickupCode');
-      return response;
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/$orderId'),
+      ).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw Exception('Request timeout. Please try again.');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          return order_model.Order.fromJson(data['data']);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to fetch order');
+        }
+      } else {
+        throw Exception('Failed to fetch order');
+      }
     } catch (e) {
-      throw Exception('Failed to verify pickup code: $e');
+      print('❌ Error fetching order: $e');
+      rethrow;
     }
   }
 }

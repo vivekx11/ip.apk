@@ -5,74 +5,57 @@ class OrderModel {
   final String userId;
   final String shopId;
   final String shopName;
+  final String customerName;
   final List<OrderItem> items;
   final double totalAmount;
   final String status;
-  final String orderToken;
-  final String? deliveryAddress;
+  final String pickupPin; // 4-digit PIN
+  final String orderNumber; // Formatted order number
   final String? notes;
   final DateTime createdAt;
-  final DateTime? updatedAt;
+  final DateTime? acceptedAt;
+  final DateTime? completedAt;
 
   OrderModel({
     required this.id,
     required this.userId,
     required this.shopId,
     required this.shopName,
+    required this.customerName,
     required this.items,
     required this.totalAmount,
     required this.status,
-    required this.orderToken,
-    this.deliveryAddress,
+    required this.pickupPin,
+    required this.orderNumber,
     this.notes,
     required this.createdAt,
-    this.updatedAt,
+    this.acceptedAt,
+    this.completedAt,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     return OrderModel(
-      id: json['_id'] ?? json['id'],
-      userId: json['userId'],
-      shopId: json['shopId'],
-      shopName: json['shopName'],
+      id: json['_id'] ?? json['id'] ?? '',
+      userId: json['userId'] ?? '',
+      shopId: json['shopId'] is Map ? json['shopId']['_id'] : json['shopId'] ?? '',
+      shopName: json['shopName'] ?? '',
+      customerName: json['customerName'] ?? 'Guest',
       items: (json['items'] as List?)
           ?.map((item) => OrderItem.fromJson(item))
           .toList() ?? [],
       totalAmount: (json['totalAmount'] ?? 0.0).toDouble(),
-      status: json['status'],
-      orderToken: json['orderToken'],
-      deliveryAddress: json['deliveryAddress'],
+      status: json['status'] ?? 'Pending',
+      pickupPin: json['pickupPin'] ?? json['orderToken'] ?? '', // Support both old and new
+      orderNumber: json['orderNumber'] ?? 'ORD${json['_id']?.toString().substring(0, 8).toUpperCase() ?? ''}',
       notes: json['notes'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
-          : null,
-    );
-  }
-
-  factory OrderModel.fromFirestore(Map<String, dynamic> data, String id) {
-    return OrderModel(
-      id: id,
-      userId: data['userId'] ?? '',
-      shopId: data['shopId'] ?? '',
-      shopName: data['shopName'] ?? '',
-      items: (data['items'] as List?)
-          ?.map((item) => OrderItem.fromJson(item as Map<String, dynamic>))
-          .toList() ?? [],
-      totalAmount: (data['totalAmount'] ?? 0.0).toDouble(),
-      status: data['status'] ?? 'pending',
-      orderToken: data['orderToken'] ?? '',
-      deliveryAddress: data['deliveryAddress'],
-      notes: data['notes'],
-      createdAt: data['createdAt'] != null 
-          ? (data['createdAt'] is String 
-              ? DateTime.parse(data['createdAt'])
-              : DateTime.now())
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
           : DateTime.now(),
-      updatedAt: data['updatedAt'] != null 
-          ? (data['updatedAt'] is String 
-              ? DateTime.parse(data['updatedAt'])
-              : null)
+      acceptedAt: json['acceptedAt'] != null 
+          ? DateTime.parse(json['acceptedAt']) 
+          : null,
+      completedAt: json['completedAt'] != null 
+          ? DateTime.parse(json['completedAt']) 
           : null,
     );
   }
@@ -83,40 +66,40 @@ class OrderModel {
       'userId': userId,
       'shopId': shopId,
       'shopName': shopName,
+      'customerName': customerName,
       'items': items.map((item) => item.toJson()).toList(),
       'totalAmount': totalAmount,
       'status': status,
-      'orderToken': orderToken,
-      'deliveryAddress': deliveryAddress,
+      'pickupPin': pickupPin,
+      'orderNumber': orderNumber,
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'acceptedAt': acceptedAt?.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
     };
   }
 
   String get statusDisplayName {
     switch (status) {
-      case 'pending':
+      case 'Pending':
         return 'Order Placed';
-      case 'confirmed':
-        return 'Confirmed';
-      case 'preparing':
-        return 'Preparing';
-      case 'ready':
-        return 'Ready for Pickup';
-      case 'completed':
+      case 'Accepted':
+        return 'Accepted';
+      case 'Completed':
         return 'Completed';
-      case 'cancelled':
+      case 'Cancelled':
         return 'Cancelled';
       default:
-        return 'Unknown';
+        return status;
     }
   }
 
-  bool get canBeAccepted => status == 'pending';
-  bool get canBeRejected => status == 'pending';
-  bool get canBeMarkedReady => status == 'confirmed' || status == 'preparing';
-  bool get canBeCompleted => status == 'ready';
+  bool get canBeAccepted => status == 'Pending';
+  bool get canBeRejected => status == 'Pending';
+  bool get canBeCompleted => status == 'Accepted';
+  
+  // Legacy support
+  String get orderToken => pickupPin;
 }
 
 class OrderItem {

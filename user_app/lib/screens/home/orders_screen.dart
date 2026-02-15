@@ -97,23 +97,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
     IconData statusIcon;
 
     switch (order.status) {
-      case OrderStatus.placed:
+      case OrderStatus.Pending:
         statusColor = AppTheme.warningOrange;
         statusIcon = Icons.schedule;
         break;
-      case OrderStatus.accepted:
-        statusColor = AppTheme.primaryIndigo;
+      case OrderStatus.Accepted:
+        statusColor = AppTheme.successGreen;
         statusIcon = Icons.check_circle_outline;
         break;
-      case OrderStatus.ready:
-        statusColor = AppTheme.successGreen;
-        statusIcon = Icons.done_all;
-        break;
-      case OrderStatus.completed:
+      case OrderStatus.Completed:
         statusColor = AppTheme.successGreen;
         statusIcon = Icons.check_circle;
         break;
-      case OrderStatus.cancelled:
+      case OrderStatus.Cancelled:
         statusColor = AppTheme.errorRed;
         statusIcon = Icons.cancel;
         break;
@@ -179,7 +175,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${order.products.length} item(s)',
+                '${order.items.length} item(s)',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppTheme.darkGrey,
@@ -205,9 +201,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       color: AppTheme.primaryPink,
                     ),
                   ),
-                  if (order.status == OrderStatus.ready)
+                  if (order.status == OrderStatus.Accepted)
                     Text(
-                      'Pickup Code: ${order.pickupCode}',
+                      'Pickup PIN: ${order.pickupPin}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

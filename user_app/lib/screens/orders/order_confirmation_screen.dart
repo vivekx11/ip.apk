@@ -111,7 +111,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        order.pickupCode,
+                        order.pickupPin,
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -220,13 +220,13 @@ class OrderConfirmationScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ...order.products.map((product) => Padding(
+                    ...order.items.map((item) => Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              product.name,
+                              item.productName,
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.darkGrey,
@@ -234,7 +234,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '₹${product.price.toStringAsFixed(2)}',
+                            '₹${item.price.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -379,7 +379,7 @@ class OrderConfirmationScreen extends StatelessWidget {
   }
 
   void _copyToClipboard(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: order.pickupCode));
+    Clipboard.setData(ClipboardData(text: order.pickupPin));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Pickup code copied to clipboard'),
