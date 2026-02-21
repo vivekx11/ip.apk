@@ -1,4 +1,4 @@
-# Backend Sync Implementation - Shop Owner App
+# Backend Sync Implementation - Shop Owner App....
 
 ## Overview
 Shop owner app ab local-first approach use karta hai with smart backend sync:
