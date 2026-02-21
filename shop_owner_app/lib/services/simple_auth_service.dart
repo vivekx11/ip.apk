@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/shop_owner_model.dart';
 import 'shop_api_service.dart';
 
-/// Simple username-based authentication service for shop owners (No OTP required)
+/// Simple authentication service with Google Sign-In support
 class SimpleAuthService {
   static final SimpleAuthService _instance = SimpleAuthService._internal();
   factory SimpleAuthService() => _instance;
@@ -19,39 +20,76 @@ class SimpleAuthService {
   bool get isLoggedIn => _currentOwner != null;
   String? get shopId => _shopId;
 
-  /// Login with just username (no password/OTP) + Auto-create shop
-  Future<ShopOwnerModel> loginWithUsername(String username, String shopName) async {
-    if (username.trim().isEmpty) {
-      throw Exception('Please enter a username');
-    }
-    if (shopName.trim().isEmpty) {
-      throw Exception('Please enter a shop name');
-    }
-
-    // Generate unique owner ID using phone number format
-    final ownerId = DateTime.now().millisecondsSinceEpoch.toString();
-
-    // Create shop owner model
-    _currentOwner = ShopOwnerModel(
-      id: ownerId,
-      phoneNumber: ownerId,
-      name: username.trim(),
-      shopName: shopName.trim(),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-
-    // Auto-create shop in backend - CRITICAL STEP
+  /// Check if user already has a shop (for existing users)
+  Future<Map<String, dynamic>?> checkExistingShop(String googleUserId) async {
     try {
-      print('🏪 Creating shop for owner: $ownerId');
+      print('🔍 Checking existing shop for Google user: $googleUserId');
+      final shop = await _shopApiService.getShopByOwnerId(googleUserId);
+      
+      if (shop != null) {
+        // Shop exists - load owner data
+        _shopId = shop['_id'] ?? shop['id'];
+        _currentOwner = ShopOwnerModel(
+          id: googleUserId,
+          phoneNumber: shop['phone'] ?? googleUserId,
+          name: shop['ownerName'] ?? 'Owner',
+          shopName: shop['name'] ?? 'My Shop',
+          email: shop['email'] ?? '',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        
+        await _saveOwnerData();
+        
+        print('✅ Existing shop found: $_shopId');
+        return {
+          'owner': _currentOwner,
+          'shopId': _shopId,
+        };
+      }
+      
+      print('ℹ️  No existing shop found');
+      return null;
+    } catch (e) {
+      print('⚠️ Error checking existing shop: $e');
+      return null;
+    }
+  }
+
+  /// Login with Google and create shop
+  Future<Map<String, dynamic>> loginWithGoogle({
+    required GoogleSignInAccount googleUser,
+    required String ownerName,
+    required String shopName,
+    required String phone,
+  }) async {
+    try {
+      print('🔐 Google login with shop creation');
+      print('Google ID: ${googleUser.id}');
+      print('Email: ${googleUser.email}');
+      
+      // Create shop owner model
+      _currentOwner = ShopOwnerModel(
+        id: googleUser.id,
+        phoneNumber: phone,
+        name: ownerName.trim(),
+        shopName: shopName.trim(),
+        email: googleUser.email,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Create shop in backend
+      print('🏪 Creating shop in backend...');
       final shopData = {
         'name': shopName.trim(),
         'description': 'Welcome to ${shopName.trim()}',
-        'category': 'Other', // Use 'Other' instead of 'General'
+        'category': 'Other',
         'address': 'Local Area',
-        'phone': ownerId,
-        'ownerName': username.trim(),
-        'ownerId': ownerId,
+        'phone': phone,
+        'ownerName': ownerName.trim(),
+        'ownerId': googleUser.id,
+        'email': googleUser.email,
       };
 
       final shop = await _shopApiService.createShop(shopData);
@@ -62,67 +100,43 @@ class SimpleAuthService {
       }
       
       print('✅ Shop created successfully with ID: $_shopId');
-    } catch (e) {
-      print('⚠️ Shop creation error: $e');
+
+      // Save to local storage
+      await _saveOwnerData();
+      print('💾 Owner and shopId saved');
       
-      // If shop already exists, try to fetch it
-      try {
-        final existingShop = await _shopApiService.getShopByOwnerId(ownerId);
-        if (existingShop != null) {
-          _shopId = existingShop['_id'] ?? existingShop['id'];
-          print('✅ Found existing shop with ID: $_shopId');
-        } else {
-          throw Exception('Could not create or find shop');
-        }
-      } catch (fetchError) {
-        print('❌ Could not fetch existing shop: $fetchError');
-        throw Exception('Failed to setup shop. Please try again.');
-      }
+      return {
+        'owner': _currentOwner,
+        'shopId': _shopId,
+      };
+    } catch (e) {
+      print('❌ Google login error: $e');
+      rethrow;
     }
-
-    // Verify shopId is saved
-    if (_shopId == null || _shopId!.isEmpty) {
-      throw Exception('Shop setup failed. Please try again.');
-    }
-
-    // Save to local storage
-    await _saveOwnerData();
-    print('💾 Owner and shopId saved: $_shopId');
-    
-    return _currentOwner!;
   }
 
   /// Load saved owner data
-  Future<ShopOwnerModel?> loadSavedAuth() async {
+  Future<Map<String, dynamic>?> loadSavedAuth() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final ownerDataString = prefs.getString(_ownerKey);
       final savedShopId = prefs.getString(_shopIdKey);
 
-      if (ownerDataString != null) {
+      if (ownerDataString != null && savedShopId != null) {
         final ownerData = jsonDecode(ownerDataString);
         _currentOwner = ShopOwnerModel.fromJson(ownerData);
         _shopId = savedShopId;
         
-        // If shopId not saved, try to fetch from backend
-        if (_shopId == null && _currentOwner != null) {
-          try {
-            final shop = await _shopApiService.getShopByOwnerId(_currentOwner!.id);
-            if (shop != null) {
-              _shopId = shop['_id'] ?? shop['id'];
-              await prefs.setString(_shopIdKey, _shopId!);
-              print('✅ Fetched and saved shopId: $_shopId');
-            }
-          } catch (e) {
-            print('⚠️ Could not fetch shopId: $e');
-          }
-        }
+        print('✅ Loaded saved owner: ${_currentOwner!.name}');
         
-        return _currentOwner;
+        return {
+          'owner': _currentOwner,
+          'shopId': _shopId,
+        };
       }
       return null;
     } catch (e) {
-      print('Error loading saved auth: $e');
+      print('⚠️ Error loading saved auth: $e');
       return null;
     }
   }
@@ -153,6 +167,7 @@ class SimpleAuthService {
       await prefs.remove(_shopIdKey);
       _currentOwner = null;
       _shopId = null;
+      print('✅ Logged out successfully');
     } catch (e) {
       throw Exception('Failed to logout: $e');
     }
@@ -167,5 +182,6 @@ class SimpleAuthService {
     if (_shopId != null) {
       await prefs.setString(_shopIdKey, _shopId!);
     }
+    print('💾 Owner and shop data saved');
   }
 }

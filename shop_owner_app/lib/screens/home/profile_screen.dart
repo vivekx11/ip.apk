@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/shop_provider.dart';
 import '../../services/simple_auth_service.dart';
-import '../auth/simple_login_screen.dart';
+import '../../services/google_auth_service.dart';
+import '../auth/phone_login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -20,6 +21,10 @@ class ProfileScreen extends StatelessWidget {
       body: Consumer<ShopProvider>(
         builder: (context, shopProvider, child) {
           final shop = shopProvider.currentShop;
+          final googleAuthService = GoogleAuthService();
+          final currentOwner = googleAuthService.currentOwner;
+          final googleAccount = googleAuthService.googleAccount;
+          final userEmail = currentOwner?.email ?? shop?['phone'] ?? 'No email';
 
           return SingleChildScrollView(
             child: Column(
@@ -29,53 +34,98 @@ class ProfileScreen extends StatelessWidget {
                   width: double.infinity,
                   color: AppTheme.primaryIndigo,
                   padding: const EdgeInsets.all(24),
-                  child: Column(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Profile Logo - Left Side
                       Container(
-                        width: 80,
-                        height: 80,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           color: AppTheme.white,
-                          borderRadius: BorderRadius.circular(40),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        child: shop?['imageUrl'] != null && shop!['imageUrl'].isNotEmpty
+                        child: googleAccount?.photoUrl != null
                             ? ClipRRect(
-                                borderRadius: BorderRadius.circular(40),
+                                borderRadius: BorderRadius.circular(30),
                                 child: Image.network(
-                                  shop['imageUrl'],
+                                  googleAccount!.photoUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Icon(
                                       Icons.store,
-                                      size: 40,
+                                      size: 30,
                                       color: AppTheme.primaryIndigo,
                                     );
                                   },
                                 ),
                               )
-                            : const Icon(
-                                Icons.store,
-                                size: 40,
-                                color: AppTheme.primaryIndigo,
+                            : (shop?['imageUrl'] != null && shop!['imageUrl'].isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Image.network(
+                                      shop['imageUrl'],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return const Icon(
+                                          Icons.store,
+                                          size: 30,
+                                          color: AppTheme.primaryIndigo,
+                                        );
+                                      },
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.store,
+                                    size: 30,
+                                    color: AppTheme.primaryIndigo,
+                                  )),
+                      ),
+                      const SizedBox(width: 16),
+                      // Welcome Text and Email
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppTheme.white,
+                                fontWeight: FontWeight.w400,
                               ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        shop?['name'] ?? 'Shop Owner',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.white,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              userEmail,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            if (shop != null)
+                              Text(
+                                shop['name'] ?? 'Shop Owner',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            else
+                              const Text(
+                                'Shop Owner',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.white,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      if (shop != null)
-                        Text(
-                          shop['category'] ?? 'General',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppTheme.white,
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -333,7 +383,7 @@ class ProfileScreen extends StatelessWidget {
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (context) => const SimpleLoginScreen(),
+                    builder: (context) => const PhoneLoginScreen(),
                   ),
                   (route) => false,
                 );

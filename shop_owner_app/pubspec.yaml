@@ -40,6 +40,9 @@ dependencies:
   shared_preferences: ^2.2.2
   connectivity_plus: ^6.0.5
   
+  # Google Sign-In
+  google_sign_in: ^6.2.1
+  
   # Image handling
   cached_network_image: ^3.3.0
   image_picker: ^1.0.4

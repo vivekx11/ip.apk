@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import 'order_history_screen.dart';
 
 class PlaceOrderScreen extends StatefulWidget {
   final String shopId;
@@ -399,75 +400,80 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
         notes: _notesController.text.trim(),
       );
 
-      if (response['success'] == true) {
-        final order = response['data'];
-        final pickupCode = order['pickupCode'];
-        
-        // Clear cart
-        cart.clearShopItems(widget.shopId);
-        
-        // Show success dialog
-        if (mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: const Row(
-                children: [
-                  Icon(Icons.check_circle, color: AppTheme.successGreen, size: 32),
-                  SizedBox(width: 12),
-                  Text('Order Placed!'),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Your pickup code is:',
-                    style: TextStyle(fontSize: 16),
+      // Clear cart
+      cart.clearShopItems(widget.shopId);
+      
+      // Show success dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Row(
+              children: [
+                Icon(Icons.check_circle, color: AppTheme.successGreen, size: 32),
+                SizedBox(width: 12),
+                Text('Order Placed!'),
+              ],
+            ),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.access_time,
+                  size: 64,
+                  color: AppTheme.warningYellow,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Your order has been placed successfully!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppTheme.softPink,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primaryPink, width: 2),
-                    ),
-                    child: Text(
-                      pickupCode,
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryPink,
-                        letterSpacing: 6,
-                      ),
-                    ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Waiting for shop owner to accept your order. You will be notified once accepted.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppTheme.mediumGrey,
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Show this code to the shop owner to collect your order',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.mediumGrey,
-                    ),
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    Navigator.of(context).pop(); // Go back to cart
-                  },
-                  child: const Text('OK', style: TextStyle(fontSize: 16)),
                 ),
               ],
             ),
-          );
-        }
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close dialog
+                  Navigator.of(context).pop(); // Go back
+                },
+                child: const Text('OK', style: TextStyle(fontSize: 16)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close dialog
+                  Navigator.of(context).pop(); // Go back
+                  // Navigate to order history
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OrderHistoryScreen(),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryPink,
+                  foregroundColor: AppTheme.white,
+                ),
+                child: const Text('View Orders'),
+              ),
+            ],
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {

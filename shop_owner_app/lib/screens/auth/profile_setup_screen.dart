@@ -2,45 +2,79 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
-import '../../services/simple_auth_service.dart';
+import '../../providers/shop_provider.dart';
+import '../../services/google_auth_service.dart';
 import '../home/main_screen.dart';
 
-class SimpleLoginScreen extends StatefulWidget {
-  const SimpleLoginScreen({super.key});
+class ProfileSetupScreen extends StatefulWidget {
+  const ProfileSetupScreen({super.key});
 
   @override
-  State<SimpleLoginScreen> createState() => _SimpleLoginScreenState();
+  State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
-class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
+class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _ownerNameController = TextEditingController();
   final _shopNameController = TextEditingController();
-  final _authService = SimpleAuthService();
+  final _phoneController = TextEditingController();
+  final _googleAuthService = GoogleAuthService();
+  
   bool _isLoading = false;
+  String? _googleEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadGoogleInfo();
+  }
+
+  Future<void> _loadGoogleInfo() async {
+    final googleAccount = _googleAuthService.googleAccount;
+    if (googleAccount != null) {
+      setState(() {
+        _googleEmail = googleAccount.email;
+        // Pre-fill name if available
+        if (googleAccount.displayName != null && googleAccount.displayName!.isNotEmpty) {
+          _ownerNameController.text = googleAccount.displayName!;
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _ownerNameController.dispose();
     _shopNameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleSetup() async {
     if (!_formKey.currentState!.validate()) return;
-
+    
     setState(() => _isLoading = true);
 
     try {
-      final owner = await _authService.loginWithUsername(
-        _usernameController.text,
-        _shopNameController.text,
+      final ownerName = _ownerNameController.text.trim();
+      final shopName = _shopNameController.text.trim();
+      final phone = _phoneController.text.trim();
+      
+      // Step 2: Setup profile with Google account + phone
+      final data = await _googleAuthService.setupProfile(
+        ownerName: ownerName,
+        shopName: shopName,
+        phone: phone,
       );
       
       if (!mounted) return;
       
-      // Update provider
+      // Update providers
+      final owner = data['owner'];
+      final shopId = data['shopId'];
+      
       Provider.of<UserProvider>(context, listen: false).setUser(owner);
+      Provider.of<ShopProvider>(context, listen: false).setShopId(shopId);
 
       // Navigate to main screen
       Navigator.of(context).pushReplacement(
@@ -52,7 +86,8 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.errorRed,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } finally {
@@ -93,7 +128,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                   
                   // Title
                   const Text(
-                    'Shop Owner Login',
+                    'Setup Your Profile',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -105,7 +140,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                   const SizedBox(height: 8),
                   
                   const Text(
-                    'Enter your details to continue',
+                    'Enter your shop details',
                     style: TextStyle(
                       fontSize: 16,
                       color: AppTheme.mediumGrey,
@@ -115,9 +150,64 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                   
                   const SizedBox(height: 48),
                   
-                  // Username field
+                  // Google Account Info
+                  if (_googleEmail != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryIndigo.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.primaryIndigo.withOpacity(0.2),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.email,
+                              color: AppTheme.primaryIndigo,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Signed in as',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.mediumGrey,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _googleEmail!,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.darkGrey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  
+                  // Owner Name Field
                   TextFormField(
-                    controller: _usernameController,
+                    controller: _ownerNameController,
                     decoration: InputDecoration(
                       labelText: 'Your Name',
                       hintText: 'Enter your name',
@@ -148,7 +238,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                   
                   const SizedBox(height: 16),
                   
-                  // Shop name field
+                  // Shop Name Field
                   TextFormField(
                     controller: _shopNameController,
                     decoration: InputDecoration(
@@ -179,11 +269,49 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                     },
                   ),
                   
+                  const SizedBox(height: 16),
+                  
+                  // Phone Number Field
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Phone Number',
+                      hintText: 'Enter your phone number',
+                      prefixText: '+91 ',
+                      prefixIcon: const Icon(Icons.phone, color: AppTheme.primaryIndigo),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.lightGrey),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.primaryIndigo, width: 2),
+                      ),
+                    ),
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter phone number';
+                      }
+                      if (value.trim().length != 10) {
+                        return 'Phone number must be 10 digits';
+                      }
+                      if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
+                        return 'Phone number must contain only digits';
+                      }
+                      return null;
+                    },
+                  ),
+                  
                   const SizedBox(height: 32),
                   
-                  // Login button
+                  // Continue Button
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
+                    onPressed: _isLoading ? null : _handleSetup,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryIndigo,
                       foregroundColor: AppTheme.white,
@@ -202,16 +330,23 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                               valueColor: AlwaysStoppedAnimation<Color>(AppTheme.white),
                             ),
                           )
-                        : const Text(
-                            'Continue',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Continue',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(Icons.arrow_forward, size: 20),
+                            ],
                           ),
                   ),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   
                   // Info text
                   Container(
@@ -226,7 +361,7 @@ class _SimpleLoginScreenState extends State<SimpleLoginScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'No password or phone number required. Just enter your details!',
+                            'Your shop will be created and ready to add products',
                             style: TextStyle(
                               fontSize: 13,
                               color: AppTheme.darkGrey.withOpacity(0.8),

@@ -6,6 +6,7 @@ import '../../providers/order_provider.dart';
 import '../../services/network_service.dart';
 import '../../services/simple_auth_service.dart';
 import 'pickup_code_verification_screen.dart';
+import 'order_details_screen.dart';
 
 class OrderManagementScreen extends StatefulWidget {
   const OrderManagementScreen({super.key});
@@ -223,9 +224,19 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OrderDetailsScreen(order: order),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Order Header
@@ -260,59 +271,178 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
 
             const SizedBox(height: 12),
 
-            // Pickup Code (Prominent Display)
+            // Customer Name
+            Row(
+              children: [
+                const Icon(Icons.person, size: 18, color: AppTheme.primaryIndigo),
+                const SizedBox(width: 8),
+                Text(
+                  order.customerName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.darkGrey,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Order Items Section
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primaryIndigo,
-                    AppTheme.primaryIndigo.withOpacity(0.8),
-                  ],
-                ),
+                color: AppTheme.lightGrey.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppTheme.lightGrey),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Pickup Code',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.white,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  const Row(
+                    children: [
+                      Icon(Icons.shopping_bag, size: 18, color: AppTheme.primaryIndigo),
+                      SizedBox(width: 8),
+                      Text(
+                        'Order Items',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.darkGrey,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    order.orderToken,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.white,
-                      letterSpacing: 4,
+                  const SizedBox(height: 12),
+                  ...order.items.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Product Image
+                        if (item.productImage != null && item.productImage!.isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              item.productImage!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.lightGrey,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Icon(Icons.image_not_supported, size: 24, color: AppTheme.blueGrey),
+                                );
+                              },
+                            ),
+                          )
+                        else
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: AppTheme.lightGrey,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(Icons.shopping_bag, size: 24, color: AppTheme.blueGrey),
+                          ),
+                        const SizedBox(width: 12),
+                        // Product Details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.productName,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppTheme.darkGrey,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Text(
+                                    '₹${item.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.blueGrey,
+                                    ),
+                                  ),
+                                  const Text(
+                                    ' × ',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.blueGrey,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${item.quantity}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.darkGrey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Item Total
+                        Text(
+                          '₹${item.totalPrice.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryIndigo,
+                          ),
+                        ),
+                      ],
                     ),
+                  )),
+                  const Divider(height: 16),
+                  // Total Amount
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total Amount',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.darkGrey,
+                        ),
+                      ),
+                      Text(
+                        '₹${order.totalAmount.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryIndigo,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
 
-            // Order Details
+            // Time
             Row(
               children: [
-                const Icon(Icons.currency_rupee, size: 18, color: AppTheme.darkGrey),
-                const SizedBox(width: 4),
-                Text(
-                  '₹${order.totalAmount.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.darkGrey,
-                  ),
-                ),
-                const Spacer(),
                 const Icon(Icons.access_time, size: 16, color: AppTheme.blueGrey),
                 const SizedBox(width: 4),
                 Text(
@@ -352,11 +482,40 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                         fontSize: 14,
                         color: AppTheme.darkGrey,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
             ],
+
+            const SizedBox(height: 12),
+
+            // View Details Button
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryIndigo.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Tap to view full details',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.primaryIndigo,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.primaryIndigo),
+                ],
+              ),
+            ),
 
             const SizedBox(height: 16),
 
@@ -364,6 +523,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
             _buildActionButtons(order, status),
           ],
         ),
+      ),
       ),
     );
   }

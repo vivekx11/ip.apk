@@ -6,6 +6,7 @@ import '../../models/product_model.dart';
 import '../../providers/shop_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/network_service.dart';
+import '../../services/subscription_service.dart';
 import '../orders/place_order_screen.dart';
 
 class ShopDetailsScreen extends StatefulWidget {
@@ -18,17 +19,53 @@ class ShopDetailsScreen extends StatefulWidget {
 }
 
 class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
+  final SubscriptionService _subscriptionService = SubscriptionService();
   List<Product> _selectedProducts = [];
+  bool _isSubscribed = false;
 
   @override
   void initState() {
     super.initState();
     _loadProducts();
+    _checkSubscription();
   }
 
   void _loadProducts() {
     final shopProvider = Provider.of<ShopProvider>(context, listen: false);
     shopProvider.loadShopProducts(widget.shop.id);
+  }
+
+  Future<void> _checkSubscription() async {
+    final isSubscribed = await _subscriptionService.isSubscribed(widget.shop.id);
+    setState(() {
+      _isSubscribed = isSubscribed;
+    });
+  }
+
+  Future<void> _toggleSubscription() async {
+    final newState = await _subscriptionService.toggleSubscription(widget.shop.id);
+    setState(() {
+      _isSubscribed = newState;
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            newState 
+                ? '🔔 Subscribed! You\'ll get notifications when ${widget.shop.name} adds new products'
+                : 'Unsubscribed from ${widget.shop.name}',
+          ),
+          duration: const Duration(seconds: 3),
+          backgroundColor: newState ? AppTheme.successGreen : AppTheme.mediumGrey,
+          action: SnackBarAction(
+            label: 'OK',
+            textColor: AppTheme.white,
+            onPressed: () {},
+          ),
+        ),
+      );
+    }
   }
 
   void _toggleProductSelection(Product product) {
@@ -54,6 +91,17 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
         backgroundColor: AppTheme.primaryPink,
         foregroundColor: AppTheme.white,
         elevation: 0,
+        actions: [
+          // Subscribe/Unsubscribe Button
+          IconButton(
+            icon: Icon(
+              _isSubscribed ? Icons.notifications_active : Icons.notifications_none,
+              color: AppTheme.white,
+            ),
+            onPressed: _toggleSubscription,
+            tooltip: _isSubscribed ? 'Unsubscribe' : 'Subscribe for notifications',
+          ),
+        ],
       ),
       body: Consumer2<ShopProvider, NetworkService>(
         builder: (context, shopProvider, networkService, child) {
@@ -141,6 +189,37 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    // Subscribe Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _toggleSubscription,
+                        icon: Icon(
+                          _isSubscribed ? Icons.notifications_active : Icons.notifications_none,
+                          size: 20,
+                        ),
+                        label: Text(
+                          _isSubscribed ? 'Subscribed ✓' : 'Subscribe for Updates',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isSubscribed 
+                              ? AppTheme.successGreen 
+                              : AppTheme.white,
+                          foregroundColor: _isSubscribed 
+                              ? AppTheme.white 
+                              : AppTheme.primaryPink,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
-import '../services/simple_auth_service.dart';
-import 'auth/simple_login_screen.dart';
+import '../services/google_auth_service.dart';
+import 'auth/google_login_screen.dart';
 import 'home/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkUserStatus() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final authService = SimpleAuthService();
+    final googleAuthService = GoogleAuthService();
     
     // Wait for splash screen animation
     await Future.delayed(const Duration(seconds: 2));
@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
     
     try {
-      final user = await authService.loadSavedAuth();
+      final user = await googleAuthService.loadSavedUser();
       
       if (user != null) {
         authProvider.setUser(user);
@@ -40,12 +40,12 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       } else {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
+          MaterialPageRoute(builder: (context) => const GoogleLoginScreen()),
         );
       }
     } catch (e) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
+        MaterialPageRoute(builder: (context) => const GoogleLoginScreen()),
       );
     }
   }

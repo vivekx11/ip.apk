@@ -45,11 +45,19 @@ class ApiService {
       final response = await http.get(
         Uri.parse('$baseUrl$endpoint'),
         headers: _headers,
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(
+        const Duration(seconds: 60), // Increased timeout for cold starts
+        onTimeout: () {
+          throw Exception('Request timeout. Please check your internet connection.');
+        },
+      );
       return _handleResponse(response);
     } catch (e) {
       if (e.toString().contains('No internet connection')) {
         rethrow;
+      }
+      if (e.toString().contains('timeout')) {
+        throw Exception('Request timeout. Please check your internet connection.');
       }
       throw Exception('Network error: $e');
     }
@@ -58,15 +66,31 @@ class ApiService {
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
     await _checkConnectivity();
     try {
+      print('📤 POST Request: $baseUrl$endpoint');
+      print('📦 Data: ${jsonEncode(data)}');
+      
       final response = await http.post(
         Uri.parse('$baseUrl$endpoint'),
         headers: _headers,
         body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(
+        const Duration(seconds: 60), // Increased timeout for cold starts
+        onTimeout: () {
+          throw Exception('Request timeout. Please check your internet connection.');
+        },
+      );
+      
+      print('📥 Response Status: ${response.statusCode}');
+      print('📥 Response Body: ${response.body}');
+      
       return _handleResponse(response);
     } catch (e) {
+      print('❌ POST Error: $e');
       if (e.toString().contains('No internet connection')) {
         rethrow;
+      }
+      if (e.toString().contains('timeout')) {
+        throw Exception('Request timeout. Please check your internet connection.');
       }
       throw Exception('Network error: $e');
     }
@@ -79,11 +103,19 @@ class ApiService {
         Uri.parse('$baseUrl$endpoint'),
         headers: _headers,
         body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(
+        const Duration(seconds: 60), // Increased timeout for cold starts
+        onTimeout: () {
+          throw Exception('Request timeout. Please check your internet connection.');
+        },
+      );
       return _handleResponse(response);
     } catch (e) {
       if (e.toString().contains('No internet connection')) {
         rethrow;
+      }
+      if (e.toString().contains('timeout')) {
+        throw Exception('Request timeout. Please check your internet connection.');
       }
       throw Exception('Network error: $e');
     }
@@ -95,11 +127,19 @@ class ApiService {
       final response = await http.delete(
         Uri.parse('$baseUrl$endpoint'),
         headers: _headers,
-      ).timeout(const Duration(seconds: 30));
+      ).timeout(
+        const Duration(seconds: 60), // Increased timeout for cold starts
+        onTimeout: () {
+          throw Exception('Request timeout. Please check your internet connection.');
+        },
+      );
       return _handleResponse(response);
     } catch (e) {
       if (e.toString().contains('No internet connection')) {
         rethrow;
+      }
+      if (e.toString().contains('timeout')) {
+        throw Exception('Request timeout. Please check your internet connection.');
       }
       throw Exception('Network error: $e');
     }

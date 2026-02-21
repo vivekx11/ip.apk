@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
+import '../models/user_model.dart';
 
 class UserService {
   static final UserService _instance = UserService._internal();
@@ -9,34 +10,25 @@ class UserService {
   UserService._internal();
 
   static const String baseUrl = AppConstants.baseUrl;
-  static const String _userIdKey = 'user_id';
-  static const String _userNameKey = 'user_name';
-  static const String _userPhoneKey = 'user_phone';
+  static const String _userDataKey = 'user_data';
 
-  String? _cachedUserId;
-  String? _cachedUserName;
+  UserModel? _cachedUser;
 
-  /// Get or create user (call this on app start)
-  Future<String> initializeUser() async {
+  /// Create or get user from backend
+  Future<UserModel> createOrGetUser({
+    required String phoneNumber,
+    required String name,
+  }) async {
     try {
-      // Check if userId exists in cache
-      if (_cachedUserId != null) {
-        print('✅ Using cached userId: $_cachedUserId');
-        return _cachedUserId!;
-      }
-
-      // Check if userId exists in local storage
-      final prefs = await SharedPreferences.getInstance();
-      final savedUserId = prefs.getString(_userIdKey);
-
-      print('🔍 Checking for saved userId...');
-
-      // Call backend to get or create user
+      print('📡 Creating/getting user...');
+      
       final response = await http.post(
-        Uri.parse('$baseUrl/users/init'),
+        Uri.parse('$baseUrl/users'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'userId': savedUserId,
+          'userId': phoneNumber,
+          'name': name,
+          'phoneNumber': phoneNumber,
         }),
       ).timeout(
         const Duration(seconds: 30),
@@ -48,125 +40,100 @@ class UserService {
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.body}');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
-          final userId = data['data']['userId'];
-          final userName = data['data']['name'];
-
-          // Save to local storage
-          await prefs.setString(_userIdKey, userId);
-          await prefs.setString(_userNameKey, userName);
-
-          // Cache in memory
-          _cachedUserId = userId;
-          _cachedUserName = userName;
-
-          print('✅ User initialized: $userId');
-          return userId;
+          final user = UserModel.fromJson(data['data']);
+          await _saveUser(user);
+          _cachedUser = user;
+          print('✅ User created/retrieved successfully');
+          return user;
         } else {
-          throw Exception(data['message'] ?? 'Failed to initialize user');
+          throw Exception(data['message'] ?? 'Failed to create user');
         }
       } else {
-        throw Exception('Failed to initialize user');
+        throw Exception('Failed to create user');
       }
     } catch (e) {
-      print('❌ Error initializing user: $e');
+      print('❌ Error creating user: $e');
       rethrow;
     }
   }
 
-  /// Get current user ID (from cache or storage)
-  Future<String?> getUserId() async {
-    if (_cachedUserId != null) {
-      return _cachedUserId;
-    }
+  /// Load saved user from local storage
+  Future<UserModel?> loadSavedUser() async {
+    try {
+      if (_cachedUser != null) {
+        return _cachedUser;
+      }
 
-    final prefs = await SharedPreferences.getInstance();
-    _cachedUserId = prefs.getString(_userIdKey);
-    return _cachedUserId;
+      final prefs = await SharedPreferences.getInstance();
+      final userData = prefs.getString(_userDataKey);
+      
+      if (userData != null) {
+        _cachedUser = UserModel.fromJson(json.decode(userData));
+        print('✅ Loaded saved user: ${_cachedUser!.name}');
+        return _cachedUser;
+      }
+    } catch (e) {
+      print('⚠️ Error loading saved user: $e');
+    }
+    return null;
   }
 
-  /// Get current user name
-  Future<String?> getUserName() async {
-    if (_cachedUserName != null) {
-      return _cachedUserName;
+  /// Save user to local storage
+  Future<void> _saveUser(UserModel user) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_userDataKey, json.encode(user.toJson()));
+      print('💾 User data saved locally');
+    } catch (e) {
+      print('⚠️ Error saving user: $e');
     }
-
-    final prefs = await SharedPreferences.getInstance();
-    _cachedUserName = prefs.getString(_userNameKey);
-    return _cachedUserName;
   }
+
+  /// Get current user
+  UserModel? get currentUser => _cachedUser;
 
   /// Update user profile
   Future<void> updateProfile({
     String? name,
-    String? phone,
     String? email,
+    String? address,
   }) async {
-    try {
-      final userId = await getUserId();
-      if (userId == null) {
-        throw Exception('User not initialized');
-      }
-
-      print('📝 Updating user profile...');
-
-      final response = await http.put(
-        Uri.parse('$baseUrl/users/$userId'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          if (name != null) 'name': name,
-          if (phone != null) 'phone': phone,
-          if (email != null) 'email': email,
-        }),
-      ).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw Exception('Request timeout. Please try again.');
-        },
+    if (_cachedUser != null) {
+      _cachedUser = UserModel(
+        id: _cachedUser!.id,
+        phoneNumber: _cachedUser!.phoneNumber,
+        name: name ?? _cachedUser!.name,
+        email: email ?? _cachedUser!.email,
+        address: address ?? _cachedUser!.address,
+        createdAt: _cachedUser!.createdAt,
+        updatedAt: DateTime.now(),
       );
-
-      print('Response status: ${response.statusCode}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          // Update local storage
-          final prefs = await SharedPreferences.getInstance();
-          if (name != null) {
-            await prefs.setString(_userNameKey, name);
-            _cachedUserName = name;
-          }
-          if (phone != null) {
-            await prefs.setString(_userPhoneKey, phone);
-          }
-
-          print('✅ Profile updated successfully');
-        } else {
-          throw Exception(data['message'] ?? 'Failed to update profile');
-        }
-      } else {
-        throw Exception('Failed to update profile');
-      }
-    } catch (e) {
-      print('❌ Error updating profile: $e');
-      rethrow;
+      await _saveUser(_cachedUser!);
     }
+  }
+
+  /// Clear user data (logout)
+  Future<void> clearUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_userDataKey);
+    _cachedUser = null;
+    print('🗑️ User data cleared');
   }
 
   /// Get user details from backend
   Future<Map<String, dynamic>> getUserDetails() async {
     try {
-      final userId = await getUserId();
-      if (userId == null) {
+      if (_cachedUser == null) {
         throw Exception('User not initialized');
       }
 
       print('📋 Fetching user details...');
 
       final response = await http.get(
-        Uri.parse('$baseUrl/users/$userId'),
+        Uri.parse('$baseUrl/users/${_cachedUser!.id}'),
       ).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
@@ -192,37 +159,7 @@ class UserService {
 
   /// Check if user is initialized
   Future<bool> isUserInitialized() async {
-    final userId = await getUserId();
-    return userId != null && userId.isNotEmpty;
-  }
-
-  /// Clear user data (logout)
-  Future<void> clearUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_userIdKey);
-    await prefs.remove(_userNameKey);
-    await prefs.remove(_userPhoneKey);
-    _cachedUserId = null;
-    _cachedUserName = null;
-    print('🗑️ User data cleared');
-  }
-
-  /// Save user name locally (for quick access)
-  Future<void> saveUserName(String name) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userNameKey, name);
-    _cachedUserName = name;
-  }
-
-  /// Get user phone
-  Future<String?> getUserPhone() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_userPhoneKey);
-  }
-
-  /// Save user phone locally
-  Future<void> saveUserPhone(String phone) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userPhoneKey, phone);
+    final user = await loadSavedUser();
+    return user != null;
   }
 }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/shop_model.dart';
+import '../../services/notification_service.dart';
+import '../../services/subscription_service.dart';
 import '../shops/shop_details_screen.dart';
+import 'notifications_screen.dart';
 
 class ShopsScreen extends StatefulWidget {
   const ShopsScreen({super.key});
@@ -12,20 +15,44 @@ class ShopsScreen extends StatefulWidget {
 
 class _ShopsScreenState extends State<ShopsScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final NotificationService _notificationService = NotificationService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
   List<Shop> _shops = [];
   List<Shop> _filteredShops = [];
+  List<String> _subscribedShopIds = [];
   bool _isLoading = true;
+  int _unreadNotifications = 0;
 
   @override
   void initState() {
     super.initState();
     _loadShops();
+    _loadUnreadNotifications();
+    _loadSubscriptions();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadUnreadNotifications() async {
+    final count = await _notificationService.getUnreadCount();
+    if (mounted) {
+      setState(() {
+        _unreadNotifications = count;
+      });
+    }
+  }
+
+  Future<void> _loadSubscriptions() async {
+    final subscribed = await _subscriptionService.getSubscribedShops();
+    if (mounted) {
+      setState(() {
+        _subscribedShopIds = subscribed;
+      });
+    }
   }
 
   void _loadShops() {
@@ -107,6 +134,50 @@ class _ShopsScreenState extends State<ShopsScreen> {
         backgroundColor: AppTheme.primaryPink,
         foregroundColor: AppTheme.white,
         elevation: 0,
+        actions: [
+          // Notification Bell Icon
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: AppTheme.white),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  );
+                  _loadUnreadNotifications();
+                },
+              ),
+              if (_unreadNotifications > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.errorRed,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      _unreadNotifications > 9 ? '9+' : '$_unreadNotifications',
+                      style: const TextStyle(
+                        color: AppTheme.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -183,18 +254,22 @@ class _ShopsScreenState extends State<ShopsScreen> {
   }
 
   Widget _buildShopCard(Shop shop) {
+    final isSubscribed = _subscribedShopIds.contains(shop.id);
+    
     return Card(
       elevation: 4,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ShopDetailsScreen(shop: shop),
             ),
           );
+          // Refresh subscriptions after returning
+          _loadSubscriptions();
         },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
@@ -209,10 +284,33 @@ class _ShopsScreenState extends State<ShopsScreen> {
                   color: AppTheme.lightGrey,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.store,
-                  size: 40,
-                  color: AppTheme.primaryPink,
+                child: Stack(
+                  children: [
+                    const Center(
+                      child: Icon(
+                        Icons.store,
+                        size: 40,
+                        color: AppTheme.primaryPink,
+                      ),
+                    ),
+                    if (isSubscribed)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.successGreen,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.notifications_active,
+                            size: 16,
+                            color: AppTheme.white,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(width: 16),
@@ -285,6 +383,37 @@ class _ShopsScreenState extends State<ShopsScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        if (isSubscribed)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppTheme.successGreen.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.notifications_active,
+                                  size: 12,
+                                  color: AppTheme.successGreen,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Subscribed',
+                                  style: TextStyle(
+                                    color: AppTheme.successGreen,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         const Spacer(),
                         const Icon(Icons.star, color: Colors.amber, size: 16),
                         const SizedBox(width: 4),

@@ -7,6 +7,8 @@ import '../../providers/user_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/shop_provider.dart';
 import '../../services/image_upload_service.dart';
+import '../../services/shop_sync_service.dart';
+import '../../services/simple_auth_service.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -94,64 +96,42 @@ class _AddProductScreenState extends State<AddProductScreen> {
       return;
     }
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final shopProvider = Provider.of<ShopProvider>(context, listen: false);
-    
-    // Get owner ID - CRITICAL for shop identification
-    final ownerId = authProvider.user?['phoneNumber'] ?? 
-                    authProvider.user?['id'] ?? 
-                    userProvider.currentOwner?.id;
-    
-    if (ownerId == null || ownerId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Owner ID not found. Please login again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    
-    final shopName = userProvider.username ?? 'My Shop';
-    
-    // Get shopId - MUST have this before uploading
-    String? shopId = shopProvider.currentShop?['_id'] ?? shopProvider.currentShop?['id'];
-    
-    // If no shopId, try to load it
-    if (shopId == null || shopId.isEmpty) {
-      try {
-        print('🔍 Loading shop for owner: $ownerId');
-        await shopProvider.loadShopByOwnerId(ownerId);
-        shopId = shopProvider.currentShop?['_id'] ?? shopProvider.currentShop?['id'];
-      } catch (e) {
-        print('⚠️ Could not load shop: $e');
-      }
-    }
-
     setState(() {
       _isUploading = true;
     });
 
     try {
-      print('🚀 Starting product upload...');
-      print('📋 Owner ID: $ownerId');
-      print('🏪 Shop ID: $shopId');
-      print('🏷️ Shop Name: $shopName');
+      // Step 1: Get owner from SimpleAuthService
+      final simpleAuthService = SimpleAuthService();
+      final currentOwner = simpleAuthService.currentOwner;
       
-      // Validate we have required data
-      if (shopId == null || shopId.isEmpty) {
-        throw Exception('Shop ID not found. Backend will auto-create shop using ownerId.');
+      if (currentOwner == null) {
+        throw Exception('Please login again to continue');
       }
+      
+      print('👤 Owner: ${currentOwner.name}');
+      print('🏪 Shop: ${currentOwner.shopName}');
+      print('🆔 Owner ID: ${currentOwner.id}');
+      
+      // Step 2: Ensure shop is synced with backend
+      print('🔄 Checking shop sync status...');
+      final shopSyncService = ShopSyncService();
+      final backendShopId = await shopSyncService.syncShopWithBackend();
+      
+      print('✅ Shop synced with backend');
+      print('🏪 Backend Shop ID: $backendShopId');
+      
+      // Step 3: Upload product
+      print('🚀 Starting product upload...');
       
       final response = await _uploadService.uploadProduct(
         imageFile: _selectedImages[0],
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
         price: double.parse(_priceController.text.trim()),
-        shopId: shopId, // CRITICAL: Send shopId
-        shopName: shopName,
-        ownerId: ownerId, // CRITICAL: Send ownerId for auto-shop creation
+        shopId: backendShopId, // Use backend shop ID
+        shopName: currentOwner.shopName ?? 'My Shop',
+        ownerId: currentOwner.id,
         category: _categoryController.text.trim().isNotEmpty 
             ? _categoryController.text.trim() 
             : 'General',
@@ -184,10 +164,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
       String errorMessage = 'Upload failed';
       if (e.toString().contains('SocketException') || e.toString().contains('Failed host lookup')) {
         errorMessage = 'Cannot connect to server. Check internet connection.';
-      } else if (e.toString().contains('TimeoutException')) {
-        errorMessage = 'Connection timeout. Server is slow or unavailable.';
-      } else if (e.toString().contains('Shop ID not found')) {
-        errorMessage = 'Shop not found. Please restart app and login again.';
+      } else if (e.toString().contains('TimeoutException') || e.toString().contains('timeout')) {
+        errorMessage = 'Connection timeout. Please check your internet and try again.';
+      } else if (e.toString().contains('Please login again')) {
+        errorMessage = 'Please login again to continue.';
       } else {
         errorMessage = e.toString().replaceAll('Exception: ', '');
       }

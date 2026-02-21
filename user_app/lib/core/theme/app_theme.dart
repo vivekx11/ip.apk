@@ -12,6 +12,7 @@ class AppTheme {
   
   // Status colors
   static const Color warningOrange = Color(0xFFFF9800);
+  static const Color warningYellow = Color(0xFFFFC107);
   static const Color primaryIndigo = Color(0xFF3F51B5);
   static const Color successGreen = Color(0xFF4CAF50);
   static const Color errorRed = Color(0xFFF44336);

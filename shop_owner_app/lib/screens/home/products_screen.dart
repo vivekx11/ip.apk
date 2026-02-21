@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/shop_provider.dart';
 import '../../providers/product_provider.dart';
+import '../../services/shop_sync_service.dart';
 import '../products/add_product_screen.dart';
 import '../products/product_details_screen.dart';
 
@@ -23,10 +24,23 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Future<void> _loadProducts() async {
     try {
       final shopProvider = Provider.of<ShopProvider>(context, listen: false);
-      if (shopProvider.currentShop != null) {
-        final shopId = shopProvider.currentShop!['_id'] ?? shopProvider.currentShop!['id'];
+      
+      // Get shop ID from local storage (saved during sync)
+      String? shopId = shopProvider.shopId;
+      
+      // If no shop ID in provider, try to load from sync service
+      if (shopId == null || shopId.isEmpty) {
+        final shopSyncService = ShopSyncService();
+        await shopSyncService.loadSavedBackendShopId();
+        shopId = shopSyncService.backendShopId;
+      }
+      
+      if (shopId != null && shopId.isNotEmpty) {
+        print('📦 Loading products for shop: $shopId');
         await Provider.of<ProductProvider>(context, listen: false)
             .loadShopProducts(shopId);
+      } else {
+        print('⚠️ No shop ID found - products will load after first product upload');
       }
     } catch (e) {
       print('Error loading products: $e');
@@ -65,38 +79,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
       body: Consumer2<ShopProvider, ProductProvider>(
         builder: (context, shopProvider, productProvider, child) {
-          if (shopProvider.currentShop == null) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.store_outlined,
-                    size: 80,
-                    color: AppTheme.lightIndigo,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'No Shop Registered',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: AppTheme.darkGrey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Please register your shop first',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppTheme.blueGrey,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
+          // No need to check currentShop - products will load after first upload
           if (productProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }

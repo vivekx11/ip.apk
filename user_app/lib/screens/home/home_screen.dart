@@ -4,9 +4,11 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../services/network_service.dart';
+import '../../services/notification_service.dart';
 import '../../widgets/shimmer_loading.dart';
 import '../../models/product_model.dart';
 import '../shops/shops_screen.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,14 +20,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final NetworkService _networkService = NetworkService();
+  final NotificationService _notificationService = NotificationService();
   bool _isOnline = true;
   String _selectedCategory = 'All';
+  String _searchQuery = '';
+  int _unreadNotifications = 0;
 
   @override
   void initState() {
     super.initState();
     _checkConnectivity();
     _loadProducts();
+    _loadUnreadNotifications();
   }
 
   Future<void> _checkConnectivity() async {
@@ -38,6 +44,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadProducts() async {
     if (!mounted) return;
     await Provider.of<ProductProvider>(context, listen: false).loadProducts();
+  }
+
+  Future<void> _loadUnreadNotifications() async {
+    final count = await _notificationService.getUnreadCount();
+    if (mounted) {
+      setState(() {
+        _unreadNotifications = count;
+      });
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query.toLowerCase();
+    });
   }
 
   @override
@@ -59,6 +80,50 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppTheme.primaryPink,
         foregroundColor: AppTheme.darkGrey,
         elevation: 0,
+        actions: [
+          // Notification Bell Icon
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, color: AppTheme.white),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationsScreen(),
+                    ),
+                  );
+                  _loadUnreadNotifications();
+                },
+              ),
+              if (_unreadNotifications > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppTheme.errorRed,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      _unreadNotifications > 9 ? '9+' : '$_unreadNotifications',
+                      style: const TextStyle(
+                        color: AppTheme.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadProducts,
@@ -101,6 +166,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
 
                   var products = productProvider.products;
+
+                  // Apply search filter
+                  if (_searchQuery.isNotEmpty) {
+                    products = products.where((product) {
+                      final productName = product.name.toLowerCase();
+                      final shopName = product.shopName.toLowerCase();
+                      final description = product.description.toLowerCase();
+                      
+                      return productName.contains(_searchQuery) ||
+                             shopName.contains(_searchQuery) ||
+                             description.contains(_searchQuery);
+                    }).toList();
+                  }
 
                   if (products.isEmpty) {
                     return _buildEmptyState();
@@ -146,14 +224,19 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextField(
               controller: _searchController,
-              onSubmitted: (query) {
-                if (query.isNotEmpty) {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ShopsScreen(searchQuery: query)));
-                }
-              },
+              onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Search products or shops...',
                 prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, color: AppTheme.primaryPink),
+                        onPressed: () {
+                          _searchController.clear();
+                          _onSearchChanged('');
+                        },
+                      )
+                    : null,
                 filled: true,
                 fillColor: AppTheme.white,
                 border: OutlineInputBorder(
@@ -408,11 +491,41 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(32),
         child: Column(
           children: [
-            Icon(Icons.shopping_bag_outlined, size: 64, color: AppTheme.lightPink),
+            Icon(
+              _searchQuery.isNotEmpty 
+                  ? Icons.search_off 
+                  : Icons.shopping_bag_outlined,
+              size: 64,
+              color: AppTheme.lightPink,
+            ),
             const SizedBox(height: 16),
-            const Text('No products available yet', style: TextStyle(color: AppTheme.darkGrey)),
+            Text(
+              _searchQuery.isNotEmpty 
+                  ? 'No products found' 
+                  : 'No products available yet',
+              style: const TextStyle(color: AppTheme.darkGrey),
+            ),
             const SizedBox(height: 8),
-            const Text('Check back soon for new items!', style: TextStyle(color: AppTheme.mediumGrey, fontSize: 12)),
+            Text(
+              _searchQuery.isNotEmpty 
+                  ? 'Try searching with different keywords' 
+                  : 'Check back soon for new items!',
+              style: const TextStyle(color: AppTheme.mediumGrey, fontSize: 12),
+            ),
+            if (_searchQuery.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  _searchController.clear();
+                  _onSearchChanged('');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryPink,
+                  foregroundColor: AppTheme.white,
+                ),
+                child: const Text('Clear Search'),
+              ),
+            ],
           ],
         ),
       ),

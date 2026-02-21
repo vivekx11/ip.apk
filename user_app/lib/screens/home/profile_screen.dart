@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/user_provider.dart';
-import '../../services/simple_auth_service.dart';
-import '../auth/simple_login_screen.dart';
+import '../../services/google_auth_service.dart';
+import '../auth/google_login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -19,6 +19,11 @@ class ProfileScreen extends StatelessWidget {
       ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
+          final googleAuthService = GoogleAuthService();
+          final currentUser = googleAuthService.currentUser;
+          final googleAccount = googleAuthService.googleAccount;
+          final userEmail = currentUser?.email ?? 'No email';
+          
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -27,35 +32,71 @@ class ProfileScreen extends StatelessWidget {
                   width: double.infinity,
                   color: AppTheme.primaryPink,
                   padding: const EdgeInsets.all(24),
-                  child: Column(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Profile Logo - Left Side
                       Container(
-                        width: 80,
-                        height: 80,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           color: AppTheme.white,
-                          borderRadius: BorderRadius.circular(40),
+                          borderRadius: BorderRadius.circular(30),
                         ),
-                        child: const Icon(
-                          Icons.person,
-                          size: 40,
-                          color: AppTheme.primaryPink,
-                        ),
+                        child: googleAccount?.photoUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(30),
+                                child: Image.network(
+                                  googleAccount!.photoUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.person,
+                                      size: 30,
+                                      color: AppTheme.primaryPink,
+                                    );
+                                  },
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                size: 30,
+                                color: AppTheme.primaryPink,
+                              ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        userProvider.username ?? 'Welcome User!',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.white,
-                        ),
-                      ),
-                      const Text(
-                        'Local Marketplace Customer',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.white,
+                      const SizedBox(width: 16),
+                      // Welcome Text and Email
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Welcome',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppTheme.white,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              userEmail,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Local Marketplace Customer',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -142,11 +183,11 @@ class ProfileScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await SimpleAuthService().logout();
+              await GoogleAuthService().signOut();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(
-                    builder: (context) => const SimpleLoginScreen(),
+                    builder: (context) => const GoogleLoginScreen(),
                   ),
                   (route) => false,
                 );

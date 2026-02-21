@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/theme/app_theme.dart';
 import '../providers/user_provider.dart';
+import '../providers/shop_provider.dart';
 import '../services/simple_auth_service.dart';
-import 'auth/simple_login_screen.dart';
+import 'auth/phone_login_screen.dart';
 import 'home/main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -22,7 +23,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkUserStatus() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final authService = SimpleAuthService();
+    final shopProvider = Provider.of<ShopProvider>(context, listen: false);
+    final simpleAuthService = SimpleAuthService();
     
     // Wait for splash screen animation
     await Future.delayed(const Duration(seconds: 2));
@@ -30,21 +32,24 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
     
     try {
-      final owner = await authService.loadSavedAuth();
+      final data = await simpleAuthService.loadSavedAuth();
       
-      if (owner != null) {
-        userProvider.setUser(owner);
+      if (data != null && data['owner'] != null && data['shopId'] != null) {
+        // Profile is complete, go to main screen
+        userProvider.setUser(data['owner']);
+        shopProvider.setShopId(data['shopId']);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       } else {
+        // No saved data, go to login
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
+          MaterialPageRoute(builder: (context) => const PhoneLoginScreen()),
         );
       }
     } catch (e) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const SimpleLoginScreen()),
+        MaterialPageRoute(builder: (context) => const PhoneLoginScreen()),
       );
     }
   }
