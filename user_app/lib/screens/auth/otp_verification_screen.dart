@@ -77,7 +77,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('OTP sent successfully'),
-          backgroundColor: AppTheme.primaryPink,
+          backgroundColor: AppTheme.primaryYellow,
         ),
       );
     }
@@ -89,7 +89,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: const Text('Verify OTP'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
       ),
       body: SafeArea(
@@ -104,13 +104,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme.softPink,
+                    color: AppTheme.softYellow,
                     borderRadius: BorderRadius.circular(40),
                   ),
                   child: const Icon(
                     Icons.sms_outlined,
                     size: 40,
-                    color: AppTheme.primaryPink,
+                    color: AppTheme.primaryYellow,
                   ),
                 ),
               ),
@@ -162,7 +162,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                             width: 2,
                           ),
                         ),
@@ -240,7 +240,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     child: const Text(
                       'Resend',
                       style: TextStyle(
-                        color: AppTheme.primaryPink,
+                        color: AppTheme.primaryYellow,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

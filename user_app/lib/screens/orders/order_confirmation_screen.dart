@@ -16,7 +16,7 @@ class OrderConfirmationScreen extends StatelessWidget {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: const Text('Order Confirmed'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
         automaticallyImplyLeading: false,
@@ -62,7 +62,7 @@ class OrderConfirmationScreen extends StatelessWidget {
             // Pickup & QR Code Card
             Card(
               elevation: 12,
-              shadowColor: AppTheme.primaryPink.withOpacity(0.4),
+              shadowColor: AppTheme.primaryYellow.withOpacity(0.4),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               child: Container(
                 width: double.infinity,
@@ -70,7 +70,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppTheme.softPink, width: 2),
+                  border: Border.all(color: AppTheme.softYellow, width: 2),
                 ),
                 child: Column(
                   children: [
@@ -79,7 +79,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryPink,
+                        color: AppTheme.primaryYellow,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -107,7 +107,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: AppTheme.softPink,
+                        color: AppTheme.softYellow,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -115,7 +115,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryPink,
+                          color: AppTheme.primaryYellow,
                           letterSpacing: 4,
                         ),
                       ),
@@ -126,7 +126,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                       icon: const Icon(Icons.copy, size: 16),
                       label: const Text('Copy Code'),
                       style: TextButton.styleFrom(
-                        foregroundColor: AppTheme.primaryPink,
+                        foregroundColor: AppTheme.primaryYellow,
                       ),
                     ),
                   ],
@@ -166,7 +166,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                           child: const Icon(
                             Icons.store,
                             size: 20,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -261,7 +261,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           ),
                         ),
                       ],
@@ -330,8 +330,8 @@ class OrderConfirmationScreen extends StatelessWidget {
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.primaryPink,
-                      side: const BorderSide(color: AppTheme.primaryPink),
+                      foregroundColor: AppTheme.primaryYellow,
+                      side: const BorderSide(color: AppTheme.primaryYellow),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -354,7 +354,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                       Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryPink,
+                      backgroundColor: AppTheme.primaryYellow,
                       foregroundColor: AppTheme.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

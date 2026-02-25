@@ -8,6 +8,7 @@ class Product {
   final String category;
   final List<String> imageUrls;
   final bool isAvailable;
+  final int stock;
 
   Product({
     required this.id,
@@ -19,6 +20,7 @@ class Product {
     required this.category,
     required this.imageUrls,
     required this.isAvailable,
+    this.stock = 100,
   });
 
   String get imageUrl => imageUrls.isNotEmpty ? imageUrls.first : '';
@@ -42,6 +44,7 @@ class Product {
       category: json['category'] ?? 'General',
       imageUrls: images,
       isAvailable: json['isAvailable'] ?? true,
+      stock: json['stock'] ?? 100,
     );
   }
 
@@ -56,6 +59,7 @@ class Product {
       'category': category,
       'imageUrls': imageUrls,
       'isAvailable': isAvailable,
+      'stock': stock,
     };
   }
 
@@ -71,7 +75,7 @@ class Product {
       imageUrls: imageUrls,
       category: category,
       isAvailable: isAvailable,
-      stock: 100,
+      stock: stock,
       createdAt: DateTime.now(),
     );
   }

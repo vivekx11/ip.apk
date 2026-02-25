@@ -77,13 +77,13 @@ class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppTheme.softPink,
+                      color: AppTheme.softYellow,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: const Icon(
                       Icons.person_add_outlined,
                       size: 50,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
                   ),
                 ),
@@ -115,7 +115,7 @@ class _UsernameSetupScreenState extends State<UsernameSetupScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Your Name',
                     hintText: 'Enter your name',
-                    prefixIcon: Icon(Icons.person, color: AppTheme.primaryPink),
+                    prefixIcon: Icon(Icons.person, color: AppTheme.primaryYellow),
                   ),
                 ),
                 const SizedBox(height: 32),

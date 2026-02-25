@@ -87,13 +87,13 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryPink.withOpacity(0.1),
+                      color: AppTheme.primaryYellow.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.shopping_bag,
                       size: 60,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
                   ),
                   
@@ -129,7 +129,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Phone Number',
                       hintText: 'Enter your phone number',
-                      prefixIcon: const Icon(Icons.phone, color: AppTheme.primaryPink),
+                      prefixIcon: const Icon(Icons.phone, color: AppTheme.primaryYellow),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -139,7 +139,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.primaryPink, width: 2),
+                        borderSide: const BorderSide(color: AppTheme.primaryYellow, width: 2),
                       ),
                     ),
                     keyboardType: TextInputType.phone,
@@ -166,7 +166,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Your Name',
                       hintText: 'Enter your name',
-                      prefixIcon: const Icon(Icons.person, color: AppTheme.primaryPink),
+                      prefixIcon: const Icon(Icons.person, color: AppTheme.primaryYellow),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -176,7 +176,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.primaryPink, width: 2),
+                        borderSide: const BorderSide(color: AppTheme.primaryYellow, width: 2),
                       ),
                     ),
                     textCapitalization: TextCapitalization.words,
@@ -197,7 +197,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryPink,
+                      backgroundColor: AppTheme.primaryYellow,
                       foregroundColor: AppTheme.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -229,12 +229,12 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.softPink,
+                      color: AppTheme.softYellow,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline, color: AppTheme.primaryPink, size: 20),
+                        const Icon(Icons.info_outline, color: AppTheme.primaryYellow, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(

@@ -12,10 +12,10 @@ class ShopProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softPink,
+      backgroundColor: AppTheme.softYellow,
       appBar: AppBar(
         title: Text(shopName),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.darkGrey,
         elevation: 0,
       ),
@@ -30,7 +30,7 @@ class ShopProductsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_bag_outlined, size: 64, color: AppTheme.lightPink),
+                  Icon(Icons.shopping_bag_outlined, size: 64, color: AppTheme.lightYellow),
                   SizedBox(height: 16),
                   Text('No products available', style: TextStyle(color: AppTheme.darkGrey)),
                 ],
@@ -69,13 +69,13 @@ class ShopProductsScreen extends StatelessWidget {
                                   width: double.infinity,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) => Container(
-                                    color: AppTheme.lightPink,
-                                    child: const Icon(Icons.image_not_supported, size: 40, color: AppTheme.primaryPink),
+                                    color: AppTheme.lightYellow,
+                                    child: const Icon(Icons.image_not_supported, size: 40, color: AppTheme.primaryYellow),
                                   ),
                                 )
                               : Container(
-                                  color: AppTheme.lightPink,
-                                  child: const Icon(Icons.shopping_bag, size: 40, color: AppTheme.primaryPink),
+                                  color: AppTheme.lightYellow,
+                                  child: const Icon(Icons.shopping_bag, size: 40, color: AppTheme.primaryYellow),
                                 ),
                         ),
                       ),
@@ -106,7 +106,7 @@ class ShopProductsScreen extends StatelessWidget {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: AppTheme.primaryPink,
+                                      color: AppTheme.primaryYellow,
                                     ),
                                   ),
                                   InkWell(
@@ -114,7 +114,7 @@ class ShopProductsScreen extends StatelessWidget {
                                     child: Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryPink,
+                                        color: AppTheme.primaryYellow,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Icon(Icons.add_shopping_cart, size: 18, color: AppTheme.white),
@@ -139,7 +139,27 @@ class ShopProductsScreen extends StatelessWidget {
 
   void _addToCart(BuildContext context, dynamic product) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.addItem(product.toProductModel());
+    final error = cartProvider.addItem(product.toProductModel());
+    
+    if (error != null) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: AppTheme.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text(error)),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -196,7 +216,7 @@ class ShopProductsScreen extends StatelessWidget {
               width: double.infinity,
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppTheme.lightPink,
+                color: AppTheme.lightYellow,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: product.imageUrl.isNotEmpty
@@ -204,7 +224,7 @@ class ShopProductsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       child: Image.network(product.imageUrl, fit: BoxFit.cover),
                     )
-                  : const Icon(Icons.shopping_bag, size: 100, color: AppTheme.primaryPink),
+                  : const Icon(Icons.shopping_bag, size: 100, color: AppTheme.primaryYellow),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -226,18 +246,18 @@ class ShopProductsScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryPink.withOpacity(0.1),
+                            color: AppTheme.primaryYellow.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.store, size: 16, color: AppTheme.primaryPink),
+                              const Icon(Icons.store, size: 16, color: AppTheme.primaryYellow),
                               const SizedBox(width: 6),
                               Text(
                                 product.shopName,
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  color: AppTheme.primaryPink,
+                                  color: AppTheme.primaryYellow,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -250,7 +270,7 @@ class ShopProductsScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.primaryPink.withOpacity(0.1),
+                        color: AppTheme.primaryYellow.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -269,7 +289,7 @@ class ShopProductsScreen extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryPink,
+                              color: AppTheme.primaryYellow,
                             ),
                           ),
                         ],
@@ -307,7 +327,7 @@ class ShopProductsScreen extends StatelessWidget {
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryPink,
+                          backgroundColor: AppTheme.primaryYellow,
                           foregroundColor: AppTheme.white,
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(

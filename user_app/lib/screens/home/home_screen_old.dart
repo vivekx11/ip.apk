@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: const Text('Local Marketplace'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
         actions: [
@@ -42,13 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Search Bar
             Container(
-              color: AppTheme.primaryPink,
+              color: AppTheme.primaryYellow,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Search for products, shops...',
-                  prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.primaryYellow),
                   filled: true,
                   fillColor: AppTheme.white,
                   border: OutlineInputBorder(
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         child: const Text(
                           'View All',
-                          style: TextStyle(color: AppTheme.primaryPink),
+                          style: TextStyle(color: AppTheme.primaryYellow),
                         ),
                       ),
                     ],
@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: const Center(
-                child: Icon(Icons.store, size: 40, color: AppTheme.primaryPink),
+                child: Icon(Icons.store, size: 40, color: AppTheme.primaryYellow),
               ),
             ),
             Padding(
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               ),
               child: const Center(
-                child: Icon(Icons.shopping_bag, size: 40, color: AppTheme.primaryPink),
+                child: Icon(Icons.shopping_bag, size: 40, color: AppTheme.primaryYellow),
               ),
             ),
           ),
@@ -323,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryPink,
+                    color: AppTheme.primaryYellow,
                   ),
                 ),
               ],

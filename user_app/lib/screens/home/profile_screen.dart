@@ -16,7 +16,7 @@ class ProfileScreen extends StatelessWidget {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
       ),
       body: Consumer<UserProvider>(
@@ -32,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
                 // Profile Header
                 Container(
                   width: double.infinity,
-                  color: AppTheme.primaryPink,
+                  color: AppTheme.primaryYellow,
                   padding: const EdgeInsets.all(24),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
                                     return const Icon(
                                       Icons.person,
                                       size: 30,
-                                      color: AppTheme.primaryPink,
+                                      color: AppTheme.primaryYellow,
                                     );
                                   },
                                 ),
@@ -63,7 +63,7 @@ class ProfileScreen extends StatelessWidget {
                             : const Icon(
                                 Icons.person,
                                 size: 30,
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                               ),
                       ),
                       const SizedBox(width: 16),
@@ -242,7 +242,7 @@ class ProfileScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(icon, color: AppTheme.primaryPink),
+        leading: Icon(icon, color: AppTheme.primaryYellow),
         title: Text(
           title,
           style: const TextStyle(
@@ -310,7 +310,7 @@ class ProfileScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Name updated successfully'),
-                      backgroundColor: AppTheme.primaryPink,
+                      backgroundColor: AppTheme.primaryYellow,
                     ),
                   );
                 }

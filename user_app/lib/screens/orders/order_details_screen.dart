@@ -20,7 +20,7 @@ class OrderDetailsScreen extends StatelessWidget {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: const Text('Order Details'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
       ),
@@ -77,7 +77,7 @@ class OrderDetailsScreen extends StatelessWidget {
                         icon: const Icon(Icons.directions),
                         label: const Text('Get Directions to Shop'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryPink,
+                          backgroundColor: AppTheme.primaryYellow,
                           foregroundColor: AppTheme.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -100,7 +100,7 @@ class OrderDetailsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.softPink,
+                      color: AppTheme.softYellow,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -119,7 +119,7 @@ class OrderDetailsScreen extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           ),
                         ),
                       ],
@@ -132,13 +132,13 @@ class OrderDetailsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryPink.withOpacity(0.1),
+                      color: AppTheme.primaryYellow.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primaryPink.withOpacity(0.3)),
+                      border: Border.all(color: AppTheme.primaryYellow.withOpacity(0.3)),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.info_outline, color: AppTheme.primaryPink),
+                        Icon(Icons.info_outline, color: AppTheme.primaryYellow),
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -170,7 +170,7 @@ class OrderDetailsScreen extends StatelessWidget {
 
     switch (order.status) {
       case OrderStatus.Pending:
-        bgColor = AppTheme.warningYellow;
+        bgColor = AppTheme.warningAmber;
         textColor = AppTheme.white;
         title = '⏳ Order Placed';
         subtitle = 'Waiting for shop owner to accept your order';
@@ -184,7 +184,7 @@ class OrderDetailsScreen extends StatelessWidget {
         icon = Icons.check_circle;
         break;
       case OrderStatus.Completed:
-        bgColor = AppTheme.primaryPink;
+        bgColor = AppTheme.primaryYellow;
         textColor = AppTheme.white;
         title = '🎉 Order Completed';
         subtitle = 'Thank you for your order!';
@@ -264,10 +264,10 @@ class OrderDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppTheme.softPink,
+                color: AppTheme.softYellow,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, color: AppTheme.primaryPink, size: 24),
+              child: Icon(icon, color: AppTheme.primaryYellow, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -337,11 +337,7 @@ class OrderDetailsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.primaryPink, AppTheme.primaryPink.withOpacity(0.8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppTheme.primaryYellow,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -365,7 +361,7 @@ class OrderDetailsScreen extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryPink,
+                  color: AppTheme.primaryYellow,
                   letterSpacing: 8,
                 ),
               ),
@@ -415,7 +411,7 @@ class OrderDetailsScreen extends StatelessWidget {
                           return const Icon(
                             Icons.shopping_bag,
                             size: 30,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           );
                         },
                       ),
@@ -423,7 +419,7 @@ class OrderDetailsScreen extends StatelessWidget {
                   : const Icon(
                       Icons.shopping_bag,
                       size: 30,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
             ),
             const SizedBox(width: 12),
@@ -455,7 +451,7 @@ class OrderDetailsScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryPink,
+                color: AppTheme.primaryYellow,
               ),
             ),
           ],

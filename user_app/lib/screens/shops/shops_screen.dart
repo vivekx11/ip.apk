@@ -53,10 +53,10 @@ class _ShopsScreenState extends State<ShopsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softPink,
+      backgroundColor: AppTheme.softYellow,
       appBar: AppBar(
         title: const Text('Discover Shops'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.darkGrey,
         elevation: 0,
       ),
@@ -74,14 +74,14 @@ class _ShopsScreenState extends State<ShopsScreen> {
             children: [
               // Search Bar
               Container(
-                color: AppTheme.primaryPink,
+                color: AppTheme.primaryYellow,
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (query) => _filterShops(query, shopNames),
                   decoration: InputDecoration(
                     hintText: 'Search shops...',
-                    prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
+                    prefixIcon: const Icon(Icons.search, color: AppTheme.primaryYellow),
                     filled: true,
                     fillColor: AppTheme.white,
                     border: OutlineInputBorder(
@@ -98,7 +98,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                 child: productProvider.isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.primaryPink,
+                          color: AppTheme.primaryYellow,
                         ),
                       )
                     : productProvider.error != null
@@ -138,7 +138,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                                 ElevatedButton(
                                   onPressed: _loadProducts,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryPink,
+                                    backgroundColor: AppTheme.primaryYellow,
                                     foregroundColor: AppTheme.darkGrey,
                                   ),
                                   child: const Text('Retry'),
@@ -177,7 +177,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                               )
                             : RefreshIndicator(
                                 onRefresh: () async => _loadProducts(),
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                                 child: ListView.builder(
                                   padding: const EdgeInsets.all(16),
                                   itemCount: _filteredShops.length,
@@ -222,13 +222,13 @@ class _ShopsScreenState extends State<ShopsScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppTheme.lightPink,
+                  color: AppTheme.lightYellow,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
                   Icons.store,
                   size: 40,
-                  color: AppTheme.primaryPink,
+                  color: AppTheme.primaryYellow,
                 ),
               ),
               const SizedBox(width: 16),

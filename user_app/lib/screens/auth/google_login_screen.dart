@@ -63,13 +63,13 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryPink.withOpacity(0.1),
+                    color: AppTheme.primaryYellow.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.shopping_bag,
                     size: 60,
-                    color: AppTheme.primaryPink,
+                    color: AppTheme.primaryYellow,
                   ),
                 ),
                 
@@ -144,12 +144,12 @@ class _GoogleLoginScreenState extends State<GoogleLoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppTheme.softPink,
+                    color: AppTheme.softYellow,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppTheme.primaryPink, size: 20),
+                      const Icon(Icons.info_outline, color: AppTheme.primaryYellow, size: 20),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(

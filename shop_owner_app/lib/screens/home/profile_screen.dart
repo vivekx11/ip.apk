@@ -13,11 +13,12 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightGrey,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: AppTheme.primaryIndigo,
         foregroundColor: AppTheme.white,
+        elevation: 0,
       ),
       body: Consumer<ShopProvider>(
         builder: (context, shopProvider, child) {
@@ -30,32 +31,48 @@ class ProfileScreen extends StatelessWidget {
           return SingleChildScrollView(
             child: Column(
               children: [
-                // Profile Header
+                // Profile Header with Gradient
                 Container(
                   width: double.infinity,
-                  color: AppTheme.primaryIndigo,
-                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryIndigo,
+                        AppTheme.primaryIndigo.withOpacity(0.85),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Profile Logo - Left Side
+                      // Profile Avatar with Shadow
                       Container(
-                        width: 60,
-                        height: 60,
+                        width: 70,
+                        height: 70,
                         decoration: BoxDecoration(
                           color: AppTheme.white,
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(35),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: googleAccount?.photoUrl != null
                             ? ClipRRect(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(35),
                                 child: Image.network(
                                   googleAccount!.photoUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Icon(
-                                      Icons.store,
-                                      size: 30,
+                                      Icons.store_outlined,
+                                      size: 34,
                                       color: AppTheme.primaryIndigo,
                                     );
                                   },
@@ -63,65 +80,73 @@ class ProfileScreen extends StatelessWidget {
                               )
                             : (shop?['imageUrl'] != null && shop!['imageUrl'].isNotEmpty
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
+                                    borderRadius: BorderRadius.circular(35),
                                     child: Image.network(
                                       shop['imageUrl'],
                                       fit: BoxFit.cover,
                                       errorBuilder: (context, error, stackTrace) {
                                         return const Icon(
-                                          Icons.store,
-                                          size: 30,
+                                          Icons.store_outlined,
+                                          size: 34,
                                           color: AppTheme.primaryIndigo,
                                         );
                                       },
                                     ),
                                   )
                                 : const Icon(
-                                    Icons.store,
-                                    size: 30,
+                                    Icons.store_outlined,
+                                    size: 34,
                                     color: AppTheme.primaryIndigo,
                                   )),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 18),
                       // Welcome Text and Email
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Welcome',
                               style: TextStyle(
-                                fontSize: 16,
-                                color: AppTheme.white,
+                                fontSize: 15,
+                                color: AppTheme.white.withOpacity(0.9),
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               userEmail,
                               style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w700,
                                 color: AppTheme.white,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             if (shop != null)
-                              Text(
-                                shop['name'] ?? 'Shop Owner',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.white,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                              Row(
+                                children: [
+                                  Icon(Icons.store, size: 14, color: AppTheme.white.withOpacity(0.9)),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      shop['name'] ?? 'Shop Owner',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppTheme.white.withOpacity(0.9),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               )
                             else
-                              const Text(
+                              Text(
                                 'Shop Owner',
                                 style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppTheme.white,
+                                  fontSize: 14,
+                                  color: AppTheme.white.withOpacity(0.9),
                                 ),
                               ),
                           ],
@@ -134,51 +159,51 @@ class ProfileScreen extends StatelessWidget {
                 // Shop Information
                 if (shop != null)
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Shop Information',
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.darkGrey,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A1A),
                           ),
                         ),
                         const SizedBox(height: 16),
                         _buildInfoCard(
-                          icon: Icons.store,
+                          icon: Icons.store_outlined,
                           title: 'Shop Name',
                           value: shop['name'] ?? 'N/A',
                         ),
                         _buildInfoCard(
-                          icon: Icons.category,
+                          icon: Icons.category_outlined,
                           title: 'Category',
                           value: shop['category'] ?? 'N/A',
                         ),
                         _buildInfoCard(
-                          icon: Icons.location_on,
+                          icon: Icons.location_on_outlined,
                           title: 'Address',
                           value: shop['address'] ?? 'N/A',
                         ),
                         _buildInfoCard(
-                          icon: Icons.phone,
+                          icon: Icons.phone_outlined,
                           title: 'Phone',
                           value: shop['phone'] ?? 'N/A',
                         ),
                         _buildInfoCard(
-                          icon: Icons.description,
+                          icon: Icons.description_outlined,
                           title: 'Description',
                           value: shop['description'] ?? 'N/A',
                         ),
                         _buildInfoCard(
-                          icon: Icons.star,
+                          icon: Icons.star_outline,
                           title: 'Rating',
                           value: '${shop['rating'] ?? 0.0} / 5.0',
                         ),
                         _buildInfoCard(
-                          icon: Icons.toggle_on,
+                          icon: Icons.toggle_on_outlined,
                           title: 'Status',
                           value: (shop['isActive'] ?? false) ? 'Active' : 'Inactive',
                           valueColor: (shop['isActive'] ?? false) 
@@ -189,31 +214,38 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   )
                 else
-                  const Padding(
-                    padding: EdgeInsets.all(32.0),
+                  Padding(
+                    padding: const EdgeInsets.all(40.0),
                     child: Center(
                       child: Column(
                         children: [
-                          Icon(
-                            Icons.store_outlined,
-                            size: 80,
-                            color: AppTheme.lightIndigo,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'No Shop Registered',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: AppTheme.darkGrey,
-                              fontWeight: FontWeight.w500,
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppTheme.lightIndigo.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(60),
+                            ),
+                            child: const Icon(
+                              Icons.store_outlined,
+                              size: 64,
+                              color: AppTheme.lightIndigo,
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
+                          const SizedBox(height: 20),
+                          const Text(
+                            'No Shop Registered',
+                            style: TextStyle(
+                              fontSize: 19,
+                              color: Color(0xFF1A1A1A),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
                             'Please register your shop to continue',
                             style: TextStyle(
-                              fontSize: 14,
-                              color: AppTheme.blueGrey,
+                              fontSize: 15,
+                              color: Color(0xFF6B7280),
                             ),
                           ),
                         ],
@@ -289,40 +321,56 @@ class ProfileScreen extends StatelessWidget {
     required String value,
     Color? valueColor,
   }) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(icon, color: AppTheme.primaryIndigo, size: 24),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.blueGrey,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: valueColor ?? AppTheme.darkGrey,
-                    ),
-                  ),
-                ],
-              ),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryIndigo.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-          ],
-        ),
+            child: Icon(icon, color: AppTheme.primaryIndigo, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: valueColor ?? const Color(0xFF1A1A1A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -332,22 +380,41 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required VoidCallback onTap,
   }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: ListTile(
-        leading: Icon(icon, color: AppTheme.primaryIndigo),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryIndigo.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: AppTheme.primaryIndigo, size: 22),
+        ),
         title: Text(
           title,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: AppTheme.darkGrey,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1A1A1A),
           ),
         ),
         trailing: const Icon(
           Icons.arrow_forward_ios,
           size: 16,
-          color: AppTheme.darkGrey,
+          color: Color(0xFF9CA3AF),
         ),
         onTap: onTap,
       ),

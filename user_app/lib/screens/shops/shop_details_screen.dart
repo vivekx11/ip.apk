@@ -88,7 +88,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: Text(widget.shop.name),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
         actions: [
@@ -111,7 +111,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
             children: [
               // Shop Info Header
               Container(
-                color: AppTheme.primaryPink,
+                color: AppTheme.primaryYellow,
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Column(
                   children: [
@@ -127,7 +127,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                           child: const Icon(
                             Icons.store,
                             size: 30,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -213,7 +213,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                               : AppTheme.white,
                           foregroundColor: _isSubscribed 
                               ? AppTheme.white 
-                              : AppTheme.primaryPink,
+                              : AppTheme.primaryYellow,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -230,7 +230,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                 child: shopProvider.isLoading && products.isEmpty
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: AppTheme.primaryPink,
+                          color: AppTheme.primaryYellow,
                         ),
                       )
                     : shopProvider.error != null && products.isEmpty
@@ -270,7 +270,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                                 ElevatedButton(
                                   onPressed: _loadProducts,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.primaryPink,
+                                    backgroundColor: AppTheme.primaryYellow,
                                     foregroundColor: AppTheme.white,
                                   ),
                                   child: const Text('Retry'),
@@ -309,7 +309,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                               )
                             : RefreshIndicator(
                                 onRefresh: () async => _loadProducts(),
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                                 child: ListView.builder(
                                   padding: const EdgeInsets.all(16),
                                   itemCount: products.length,
@@ -353,7 +353,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryPink,
+                              color: AppTheme.primaryYellow,
                             ),
                           ),
                         ],
@@ -364,7 +364,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                         child: ElevatedButton(
                           onPressed: widget.shop.isOpen && networkService.isOnline ? _placeOrder : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryPink,
+                            backgroundColor: AppTheme.primaryYellow,
                             foregroundColor: AppTheme.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -406,7 +406,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: isSelected
-              ? Border.all(color: AppTheme.primaryPink, width: 2)
+              ? Border.all(color: AppTheme.primaryYellow, width: 2)
               : null,
         ),
         child: Row(
@@ -429,7 +429,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                           return const Icon(
                             Icons.shopping_bag,
                             size: 30,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           );
                         },
                       ),
@@ -437,7 +437,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                   : const Icon(
                       Icons.shopping_bag,
                       size: 30,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
             ),
             const SizedBox(width: 16),
@@ -473,7 +473,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: product.isAvailable ? AppTheme.primaryPink : AppTheme.lightGrey,
+                          color: product.isAvailable ? AppTheme.primaryYellow : AppTheme.lightGrey,
                         ),
                       ),
                       const Spacer(),
@@ -509,7 +509,7 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                 if (isSelected)
                   const Icon(
                     Icons.check_circle,
-                    color: AppTheme.primaryPink,
+                    color: AppTheme.primaryYellow,
                     size: 24,
                   ),
                 const SizedBox(height: 8),
@@ -537,13 +537,13 @@ class _ShopDetailsScreenState extends State<ShopDetailsScreen> {
                             SnackBar(
                               content: Text('${product.name} added to cart'),
                               duration: const Duration(seconds: 1),
-                              backgroundColor: AppTheme.primaryPink,
+                              backgroundColor: AppTheme.primaryYellow,
                             ),
                           );
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryPink,
+                    backgroundColor: AppTheme.primaryYellow,
                     foregroundColor: AppTheme.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,

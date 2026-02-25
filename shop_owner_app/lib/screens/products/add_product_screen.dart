@@ -201,54 +201,71 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.lightGrey,
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
-        title: const Text('Add Product'),
+        title: const Text('Add Product', style: TextStyle(fontWeight: FontWeight.w600)),
         backgroundColor: AppTheme.primaryIndigo,
         foregroundColor: AppTheme.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Product Images Section
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.image, color: AppTheme.primaryIndigo, size: 24),
-                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryIndigo.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.image_outlined, color: AppTheme.primaryIndigo, size: 20),
+                          ),
+                          const SizedBox(width: 12),
                           const Text(
                             'Product Image',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.darkGrey,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1A1A1A),
                             ),
                           ),
                           const Spacer(),
                           if (_selectedImages.isNotEmpty)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
                                 color: AppTheme.successGreen.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: const Row(
                                 children: [
-                                  Icon(Icons.check_circle, color: AppTheme.successGreen, size: 16),
+                                  Icon(Icons.check_circle, color: AppTheme.successGreen, size: 14),
                                   SizedBox(width: 4),
                                   Text(
-                                    'Image Selected',
+                                    'Selected',
                                     style: TextStyle(
                                       color: AppTheme.successGreen,
                                       fontSize: 12,
@@ -260,28 +277,37 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       // Image Preview or Placeholder
                       if (_selectedImages.isEmpty)
                         Container(
-                          height: 200,
+                          height: 220,
                           decoration: BoxDecoration(
-                            color: AppTheme.lightGrey,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppTheme.blueGrey.withOpacity(0.3), width: 2, style: BorderStyle.solid),
+                            color: const Color(0xFFF8F9FB),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFE5E7EB), width: 2),
                           ),
                           child: const Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_photo_alternate, size: 64, color: AppTheme.blueGrey),
-                                SizedBox(height: 8),
+                                Icon(Icons.add_photo_alternate_outlined, size: 56, color: Color(0xFF9CA3AF)),
+                                SizedBox(height: 12),
                                 Text(
                                   'No image selected',
                                   style: TextStyle(
-                                    color: AppTheme.blueGrey,
-                                    fontSize: 14,
+                                    color: Color(0xFF6B7280),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Choose from gallery or camera',
+                                  style: TextStyle(
+                                    color: Color(0xFF9CA3AF),
+                                    fontSize: 13,
                                   ),
                                 ),
                               ],
@@ -292,32 +318,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         Stack(
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(16),
                               child: Image.file(
                                 File(_selectedImages[0].path),
                                 width: double.infinity,
-                                height: 250,
+                                height: 280,
                                 fit: BoxFit.cover,
                               ),
                             ),
                             Positioned(
-                              top: 8,
-                              right: 8,
+                              top: 12,
+                              right: 12,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.6),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: Colors.black.withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(24),
                                 ),
                                 child: IconButton(
                                   icon: const Icon(Icons.close, color: AppTheme.white, size: 20),
                                   onPressed: () => _removeImage(0),
+                                  padding: const EdgeInsets.all(8),
+                                  constraints: const BoxConstraints(),
                                 ),
                               ),
                             ),
                           ],
                         ),
                       
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       // Image picker buttons
                       Row(
@@ -325,14 +353,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _pickImages,
-                              icon: const Icon(Icons.photo_library, size: 20),
-                              label: const Text('Gallery'),
+                              icon: const Icon(Icons.photo_library_outlined, size: 20),
+                              label: const Text('Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.primaryIndigo,
-                                side: const BorderSide(color: AppTheme.primaryIndigo),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: AppTheme.primaryIndigo, width: 1.5),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
@@ -341,14 +369,14 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: _pickImageFromCamera,
-                              icon: const Icon(Icons.camera_alt, size: 20),
-                              label: const Text('Camera'),
+                              icon: const Icon(Icons.camera_alt_outlined, size: 20),
+                              label: const Text('Camera', style: TextStyle(fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppTheme.primaryIndigo,
-                                side: const BorderSide(color: AppTheme.primaryIndigo),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                side: const BorderSide(color: AppTheme.primaryIndigo, width: 1.5),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
                             ),
@@ -360,52 +388,72 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
               
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               
               // Product Details Section
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppTheme.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.info_outline, color: AppTheme.primaryIndigo, size: 24),
-                          SizedBox(width: 8),
-                          Text(
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryIndigo.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.info_outline, color: AppTheme.primaryIndigo, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
                             'Product Details',
                             style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.darkGrey,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF1A1A1A),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
                       
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
                           labelText: 'Product Name *',
                           hintText: 'Enter product name',
-                          prefixIcon: const Icon(Icons.shopping_bag, color: AppTheme.primaryIndigo),
+                          prefixIcon: const Icon(Icons.shopping_bag_outlined, color: AppTheme.primaryIndigo),
                           filled: true,
-                          fillColor: AppTheme.white,
+                          fillColor: const Color(0xFFF8F9FB),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppTheme.lightGrey),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppTheme.blueGrey.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(color: AppTheme.primaryIndigo, width: 2),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
                           ),
                         ),
                         validator: (value) {
@@ -423,20 +471,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         decoration: InputDecoration(
                           labelText: 'Description *',
                           hintText: 'Enter product description',
-                          prefixIcon: const Icon(Icons.description, color: AppTheme.primaryIndigo),
+                          prefixIcon: const Icon(Icons.description_outlined, color: AppTheme.primaryIndigo),
                           filled: true,
-                          fillColor: AppTheme.white,
+                          fillColor: const Color(0xFFF8F9FB),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppTheme.lightGrey),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppTheme.blueGrey.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(color: AppTheme.primaryIndigo, width: 2),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.red),
                           ),
                           alignLabelWithHint: true,
                         ),
@@ -456,19 +508,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         decoration: InputDecoration(
                           labelText: 'Category',
                           hintText: 'e.g., Electronics, Food, Clothing',
-                          prefixIcon: const Icon(Icons.category, color: AppTheme.primaryIndigo),
+                          prefixIcon: const Icon(Icons.category_outlined, color: AppTheme.primaryIndigo),
                           filled: true,
-                          fillColor: AppTheme.white,
+                          fillColor: const Color(0xFFF8F9FB),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: AppTheme.lightGrey),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: AppTheme.blueGrey.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(color: AppTheme.primaryIndigo, width: 2),
                           ),
                         ),
@@ -486,18 +538,22 @@ class _AddProductScreenState extends State<AddProductScreen> {
                                 hintText: '0.00',
                                 prefixIcon: const Icon(Icons.currency_rupee, color: AppTheme.primaryIndigo),
                                 filled: true,
-                                fillColor: AppTheme.white,
+                                fillColor: const Color(0xFFF8F9FB),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: AppTheme.lightGrey),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: AppTheme.blueGrey.withOpacity(0.3)),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(color: AppTheme.primaryIndigo, width: 2),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Colors.red),
                                 ),
                               ),
                               keyboardType: TextInputType.number,
@@ -513,7 +569,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                             ),
                           ),
                           
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           
                           Expanded(
                             child: TextFormField(
@@ -521,20 +577,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               decoration: InputDecoration(
                                 labelText: 'Stock *',
                                 hintText: '0',
-                                prefixIcon: const Icon(Icons.inventory, color: AppTheme.primaryIndigo),
+                                prefixIcon: const Icon(Icons.inventory_2_outlined, color: AppTheme.primaryIndigo),
                                 filled: true,
-                                fillColor: AppTheme.white,
+                                fillColor: const Color(0xFFF8F9FB),
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: AppTheme.lightGrey),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide.none,
                                 ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: AppTheme.blueGrey.withOpacity(0.3)),
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                   borderSide: const BorderSide(color: AppTheme.primaryIndigo, width: 2),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(color: Colors.red),
                                 ),
                               ),
                               keyboardType: TextInputType.number,
@@ -556,40 +616,53 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
               
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               
               // Save Button
-              SizedBox(
-                height: 50,
+              Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: _isUploading ? null : const LinearGradient(
+                    colors: [AppTheme.primaryIndigo, Color(0xFF5B6FD8)],
+                  ),
+                  boxShadow: _isUploading ? null : [
+                    BoxShadow(
+                      color: AppTheme.primaryIndigo.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: ElevatedButton(
                   onPressed: _isUploading ? null : _uploadAndSaveProduct,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryIndigo,
+                    backgroundColor: _isUploading ? const Color(0xFFE5E7EB) : Colors.transparent,
                     foregroundColor: AppTheme.white,
-                    disabledBackgroundColor: AppTheme.blueGrey,
+                    shadowColor: Colors.transparent,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    elevation: 2,
                   ),
                   child: _isUploading
-                      ? const Row(
+                      ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(
-                              width: 20,
-                              height: 20,
+                              width: 22,
+                              height: 22,
                               child: CircularProgressIndicator(
-                                color: AppTheme.white,
-                                strokeWidth: 2,
+                                color: AppTheme.blueGrey,
+                                strokeWidth: 2.5,
                               ),
                             ),
-                            SizedBox(width: 12),
-                            Text(
+                            const SizedBox(width: 12),
+                            const Text(
                               'Uploading Product...',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF6B7280),
                               ),
                             ),
                           ],
@@ -597,13 +670,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       : const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle, size: 24),
-                            SizedBox(width: 8),
+                            Icon(Icons.check_circle_outline, size: 24),
+                            SizedBox(width: 10),
                             Text(
                               'Save Product',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
@@ -611,7 +684,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
               
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
             ],
           ),
         ),

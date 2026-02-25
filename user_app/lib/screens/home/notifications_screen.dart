@@ -107,7 +107,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       backgroundColor: AppTheme.white,
       appBar: AppBar(
         title: const Text('Notifications'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
         actions: [
@@ -127,13 +127,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryPink),
+              child: CircularProgressIndicator(color: AppTheme.primaryYellow),
             )
           : _notifications.isEmpty
               ? _buildEmptyState()
               : RefreshIndicator(
                   onRefresh: _loadNotifications,
-                  color: AppTheme.primaryPink,
+                  color: AppTheme.primaryYellow,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _notifications.length,
@@ -203,7 +203,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           side: BorderSide(
             color: notification.isRead 
                 ? Colors.transparent 
-                : AppTheme.primaryPink.withOpacity(0.3),
+                : AppTheme.primaryYellow.withOpacity(0.3),
             width: 2,
           ),
         ),
@@ -238,7 +238,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               return const Icon(
                                 Icons.shopping_bag,
                                 size: 30,
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                               );
                             },
                           ),
@@ -246,7 +246,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       : const Icon(
                           Icons.shopping_bag,
                           size: 30,
-                          color: AppTheme.primaryPink,
+                          color: AppTheme.primaryYellow,
                         ),
                 ),
                 const SizedBox(width: 12),
@@ -264,7 +264,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               height: 8,
                               margin: const EdgeInsets.only(right: 8),
                               decoration: const BoxDecoration(
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -276,7 +276,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 fontWeight: notification.isRead 
                                     ? FontWeight.w500 
                                     : FontWeight.bold,
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                               ),
                             ),
                           ),
@@ -301,7 +301,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.primaryPink,
+                          color: AppTheme.primaryYellow,
                         ),
                       ),
                       const SizedBox(height: 4),

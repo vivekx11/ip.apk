@@ -102,11 +102,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.softPink,
+      backgroundColor: AppTheme.paleYellow,
       appBar: AppBar(
-        title: const Text('Local Marketplace'),
-        backgroundColor: AppTheme.primaryPink,
-        foregroundColor: AppTheme.darkGrey,
+        title: const Text('Local Marketplace', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.primaryYellow,
+        foregroundColor: AppTheme.white,
         elevation: 0,
         actions: [
           // Map Icon
@@ -230,38 +230,60 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(bottom: 16),
-      decoration: const BoxDecoration(
-        color: AppTheme.primaryPink,
-        borderRadius: BorderRadius.only(
+      padding: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryYellow,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryYellow.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Search products or shops...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: AppTheme.primaryPink),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearchChanged('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: AppTheme.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppTheme.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.darkYellow.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: 'Search products or shops...',
+                  hintStyle: TextStyle(color: AppTheme.mediumGrey.withOpacity(0.6)),
+                  prefixIcon: const Icon(Icons.search, color: AppTheme.primaryYellow),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: AppTheme.primaryYellow),
+                          onPressed: () {
+                            _searchController.clear();
+                            _onSearchChanged('');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: AppTheme.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 ),
               ),
             ),
@@ -295,13 +317,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         width: double.infinity,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          color: AppTheme.lightPink,
-                          child: const Icon(Icons.image_not_supported, size: 40, color: AppTheme.primaryPink),
+                          color: AppTheme.lightYellow,
+                          child: const Icon(Icons.image_not_supported, size: 40, color: AppTheme.primaryYellow),
                         ),
                       )
                     : Container(
-                        color: AppTheme.lightPink,
-                        child: const Icon(Icons.shopping_bag, size: 40, color: AppTheme.primaryPink),
+                        color: AppTheme.lightYellow,
+                        child: const Icon(Icons.shopping_bag, size: 40, color: AppTheme.primaryYellow),
                       ),
               ),
             ),
@@ -347,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           ),
                         ),
                         InkWell(
@@ -355,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryPink,
+                              color: AppTheme.primaryYellow,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(Icons.add, size: 16, color: AppTheme.white),
@@ -375,7 +397,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addToCart(Product product) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.addItem(product.toProductModel());
+    final error = cartProvider.addItem(product.toProductModel());
+    
+    if (error != null) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -383,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
           label: 'VIEW CART',
-          textColor: AppTheme.primaryPink,
+          textColor: AppTheme.primaryYellow,
           onPressed: () {
             // Navigate to cart - will implement next
             DefaultTabController.of(context).animateTo(2); // Cart tab
@@ -411,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 250,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppTheme.lightPink,
+                color: AppTheme.lightYellow,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               ),
               child: product.imageUrl.isNotEmpty
@@ -419,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                       child: Image.network(product.imageUrl, fit: BoxFit.cover),
                     )
-                  : const Icon(Icons.shopping_bag, size: 80, color: AppTheme.primaryPink),
+                  : const Icon(Icons.shopping_bag, size: 80, color: AppTheme.primaryYellow),
             ),
             Expanded(
               child: Padding(
@@ -455,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryPink,
+                        color: AppTheme.primaryYellow,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -486,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: const Icon(Icons.shopping_cart),
                         label: const Text('Add to Cart'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryPink,
+                          backgroundColor: AppTheme.primaryYellow,
                           foregroundColor: AppTheme.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -516,7 +550,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? Icons.search_off 
                   : Icons.shopping_bag_outlined,
               size: 64,
-              color: AppTheme.lightPink,
+              color: AppTheme.lightYellow,
             ),
             const SizedBox(height: 16),
             Text(
@@ -540,7 +574,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _onSearchChanged('');
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryPink,
+                  backgroundColor: AppTheme.primaryYellow,
                   foregroundColor: AppTheme.white,
                 ),
                 child: const Text('Clear Search'),
@@ -582,12 +616,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryPink.withOpacity(0.1),
+                      color: AppTheme.primaryYellow.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
                       Icons.store,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                       size: 20,
                     ),
                   ),
@@ -625,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 child: const Text(
                   'View All',
-                  style: TextStyle(color: AppTheme.primaryPink),
+                  style: TextStyle(color: AppTheme.primaryYellow),
                 ),
               ),
             ],
@@ -659,7 +693,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wifi_off, size: 80, color: AppTheme.lightPink),
+            const Icon(Icons.wifi_off, size: 80, color: AppTheme.lightYellow),
             const SizedBox(height: 16),
             const Text('No Internet Connection', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),

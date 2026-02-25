@@ -47,7 +47,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
           backgroundColor: AppTheme.white,
           appBar: AppBar(
             title: const Text('Place Order'),
-            backgroundColor: AppTheme.primaryPink,
+            backgroundColor: AppTheme.primaryYellow,
             foregroundColor: AppTheme.white,
             elevation: 0,
           ),
@@ -77,7 +77,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                 child: const Icon(
                                   Icons.store,
                                   size: 25,
-                                  color: AppTheme.primaryPink,
+                                  color: AppTheme.primaryYellow,
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -145,13 +145,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                           decoration: InputDecoration(
                             labelText: 'Your Name',
                             hintText: 'Enter your name',
-                            prefixIcon: const Icon(Icons.person, color: AppTheme.primaryPink),
+                            prefixIcon: const Icon(Icons.person, color: AppTheme.primaryYellow),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppTheme.primaryPink, width: 2),
+                              borderSide: const BorderSide(color: AppTheme.primaryYellow, width: 2),
                             ),
                           ),
                           validator: (value) {
@@ -168,13 +168,13 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                           decoration: InputDecoration(
                             labelText: 'Special Instructions (Optional)',
                             hintText: 'Any special requests or notes...',
-                            prefixIcon: const Icon(Icons.note, color: AppTheme.primaryPink),
+                            prefixIcon: const Icon(Icons.note, color: AppTheme.primaryYellow),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppTheme.primaryPink, width: 2),
+                              borderSide: const BorderSide(color: AppTheme.primaryYellow, width: 2),
                             ),
                           ),
                         ),
@@ -187,7 +187,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                       // Payment Info
                       Card(
                         elevation: 2,
-                        color: AppTheme.primaryPink.withOpacity(0.1),
+                        color: AppTheme.primaryYellow.withOpacity(0.1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: const Padding(
                           padding: EdgeInsets.all(16),
@@ -195,7 +195,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                             children: [
                               Icon(
                                 Icons.info_outline,
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                                 size: 24,
                               ),
                               SizedBox(width: 12),
@@ -208,7 +208,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: AppTheme.primaryPink,
+                                        color: AppTheme.primaryYellow,
                                       ),
                                     ),
                                     SizedBox(height: 4),
@@ -262,7 +262,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppTheme.primaryPink,
+                            color: AppTheme.primaryYellow,
                           ),
                         ),
                       ],
@@ -273,7 +273,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                       child: ElevatedButton(
                         onPressed: _isPlacingOrder ? null : () => _placeOrder(cart, shopItems, totalAmount, shopName),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryPink,
+                          backgroundColor: AppTheme.primaryYellow,
                           foregroundColor: AppTheme.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -327,7 +327,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
               child: const Icon(
                 Icons.shopping_bag,
                 size: 20,
-                color: AppTheme.primaryPink,
+                color: AppTheme.primaryYellow,
               ),
             ),
             const SizedBox(width: 12),
@@ -359,7 +359,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.primaryPink,
+                color: AppTheme.primaryYellow,
               ),
             ),
           ],
@@ -442,14 +442,14 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppTheme.warningYellow.withOpacity(0.1),
+                      color: AppTheme.warningAmber.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Row(
                       children: [
                         Icon(
                           Icons.access_time,
-                          color: AppTheme.warningYellow,
+                          color: AppTheme.warningAmber,
                           size: 28,
                         ),
                         SizedBox(width: 12),
@@ -486,8 +486,8 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                             Navigator.of(context).pop(); // Go back
                           },
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.primaryPink,
-                            side: const BorderSide(color: AppTheme.primaryPink, width: 2),
+                            foregroundColor: AppTheme.primaryYellow,
+                            side: const BorderSide(color: AppTheme.primaryYellow, width: 2),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -517,7 +517,7 @@ class _PlaceOrderScreenState extends State<PlaceOrderScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryPink,
+                            backgroundColor: AppTheme.primaryYellow,
                             foregroundColor: AppTheme.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(

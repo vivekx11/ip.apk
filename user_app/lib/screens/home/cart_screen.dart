@@ -5,15 +5,17 @@ import '../../providers/cart_provider.dart';
 import '../orders/place_order_screen.dart';
 
 class CartScreen extends StatelessWidget {
-  const CartScreen({super.key});
+  final VoidCallback? onBrowseProducts;
+  
+  const CartScreen({super.key, this.onBrowseProducts});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softPink,
+      backgroundColor: AppTheme.paleYellow,
       appBar: AppBar(
-        title: const Text('My Cart'),
-        backgroundColor: AppTheme.primaryPink,
+        title: const Text('My Cart', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
       ),
@@ -27,13 +29,13 @@ class CartScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: AppTheme.lightPink.withOpacity(0.3),
+                      color: AppTheme.lightYellow.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.shopping_cart_outlined,
                       size: 80,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -56,12 +58,15 @@ class CartScreen extends StatelessWidget {
                   const SizedBox(height: 32),
                   ElevatedButton.icon(
                     onPressed: () {
-                      DefaultTabController.of(context).animateTo(0); // Go to home tab
+                      // Call the callback to navigate to home tab
+                      if (onBrowseProducts != null) {
+                        onBrowseProducts!();
+                      }
                     },
                     icon: const Icon(Icons.shopping_bag),
                     label: const Text('Browse Products'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryPink,
+                      backgroundColor: AppTheme.primaryYellow,
                       foregroundColor: AppTheme.white,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -80,16 +85,30 @@ class CartScreen extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryPink,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryYellow,
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(24),
                     bottomRight: Radius.circular(24),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryYellow.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.shopping_bag, color: AppTheme.white, size: 24),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.shopping_bag, color: AppTheme.white, size: 24),
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       '${cart.itemCount} ${cart.itemCount == 1 ? 'Item' : 'Items'} in Cart',
@@ -126,7 +145,7 @@ class CartScreen extends StatelessWidget {
                               width: 80,
                               height: 80,
                               decoration: BoxDecoration(
-                                color: AppTheme.lightPink,
+                                color: AppTheme.lightYellow,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: item.imageUrl.isNotEmpty
@@ -139,7 +158,7 @@ class CartScreen extends StatelessWidget {
                                           return const Icon(
                                             Icons.shopping_bag,
                                             size: 40,
-                                            color: AppTheme.primaryPink,
+                                            color: AppTheme.primaryYellow,
                                           );
                                         },
                                       ),
@@ -147,7 +166,7 @@ class CartScreen extends StatelessWidget {
                                   : const Icon(
                                       Icons.shopping_bag,
                                       size: 40,
-                                      color: AppTheme.primaryPink,
+                                      color: AppTheme.primaryYellow,
                                     ),
                             ),
                             const SizedBox(width: 16),
@@ -194,13 +213,13 @@ class CartScreen extends StatelessWidget {
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: AppTheme.primaryPink,
+                                          color: AppTheme.primaryYellow,
                                         ),
                                       ),
                                       // Quantity Controls
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: AppTheme.primaryPink.withOpacity(0.1),
+                                          color: AppTheme.primaryYellow.withOpacity(0.1),
                                           borderRadius: BorderRadius.circular(25),
                                         ),
                                         child: Row(
@@ -210,15 +229,24 @@ class CartScreen extends StatelessWidget {
                                                 item.quantity > 1 
                                                     ? Icons.remove_circle 
                                                     : Icons.delete,
-                                                color: AppTheme.primaryPink,
+                                                color: AppTheme.primaryYellow,
                                                 size: 22,
                                               ),
                                               onPressed: () {
                                                 if (item.quantity > 1) {
-                                                  cart.updateQuantity(
+                                                  final error = cart.updateQuantity(
                                                     item.productId,
                                                     item.quantity - 1,
                                                   );
+                                                  if (error != null) {
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(error),
+                                                        backgroundColor: Colors.red,
+                                                        duration: const Duration(seconds: 2),
+                                                      ),
+                                                    );
+                                                  }
                                                 } else {
                                                   _showRemoveDialog(context, cart, item);
                                                 }
@@ -227,7 +255,7 @@ class CartScreen extends StatelessWidget {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: AppTheme.primaryPink,
+                                                color: AppTheme.primaryYellow,
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                               child: Text(
@@ -242,14 +270,24 @@ class CartScreen extends StatelessWidget {
                                             IconButton(
                                               icon: const Icon(
                                                 Icons.add_circle,
-                                                color: AppTheme.primaryPink,
+                                                color: AppTheme.primaryYellow,
                                                 size: 22,
                                               ),
                                               onPressed: () {
-                                                cart.updateQuantity(
+                                                final error = cart.updateQuantity(
                                                   item.productId,
                                                   item.quantity + 1,
                                                 );
+                                                if (error != null) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(error),
+                                                      backgroundColor: Colors.red,
+                                                      duration: const Duration(seconds: 2),
+                                                      behavior: SnackBarBehavior.floating,
+                                                    ),
+                                                  );
+                                                }
                                               },
                                             ),
                                           ],
@@ -329,7 +367,7 @@ class CartScreen extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.primaryPink,
+                              color: AppTheme.primaryYellow,
                             ),
                           ),
                         ],
@@ -357,7 +395,7 @@ class CartScreen extends StatelessWidget {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryPink,
+                            backgroundColor: AppTheme.primaryYellow,
                             foregroundColor: AppTheme.white,
                             padding: const EdgeInsets.symmetric(vertical: 18),
                             shape: RoundedRectangleBorder(

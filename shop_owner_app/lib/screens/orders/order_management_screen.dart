@@ -61,20 +61,24 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
     return Consumer<OrderProvider>(
       builder: (context, orderProvider, child) {
         return Scaffold(
-          backgroundColor: AppTheme.lightGrey,
+          backgroundColor: const Color(0xFFF5F7FA),
           appBar: AppBar(
-            title: const Text('Order Management'),
+            title: const Text('Order Management', style: TextStyle(fontWeight: FontWeight.w600)),
             backgroundColor: AppTheme.primaryIndigo,
             foregroundColor: AppTheme.white,
+            elevation: 0,
             bottom: TabBar(
               controller: _tabController,
               indicatorColor: AppTheme.white,
+              indicatorWeight: 3,
               labelColor: AppTheme.white,
               unselectedLabelColor: AppTheme.white.withOpacity(0.7),
+              labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
               tabs: [
                 Tab(
                   text: 'Pending (${orderProvider.pendingOrders.length})',
-                  icon: const Icon(Icons.pending_actions, size: 20),
+                  icon: const Icon(Icons.pending_actions_outlined, size: 20),
                 ),
                 Tab(
                   text: 'Accepted (${orderProvider.acceptedOrders.length})',
@@ -82,22 +86,29 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                 ),
                 Tab(
                   text: 'Completed (${orderProvider.completedOrders.length})',
-                  icon: const Icon(Icons.done_all, size: 20),
+                  icon: const Icon(Icons.done_all_outlined, size: 20),
                 ),
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.qr_code_scanner),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PickupCodeVerificationScreen(),
-                    ),
-                  );
-                },
-                tooltip: 'Verify Pickup Code',
+              Container(
+                margin: const EdgeInsets.only(right: 12, top: 8, bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.qr_code_scanner_outlined),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PickupCodeVerificationScreen(),
+                      ),
+                    );
+                  },
+                  tooltip: 'Verify Pickup Code',
+                ),
               ),
             ],
           ),
@@ -220,10 +231,19 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
   }
 
   Widget _buildOrderCard(OrderModel order, String status) {
-    return Card(
-      elevation: 4,
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: AppTheme.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -233,9 +253,9 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(18),
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -243,25 +263,29 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Order #${order.id}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.darkGrey,
+                Expanded(
+                  child: Text(
+                    'Order #${order.id}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: _getStatusColor(status).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     order.statusDisplayName,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                       color: _getStatusColor(status),
                     ),
                   ),
@@ -269,19 +293,26 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // Customer Name
             Row(
               children: [
-                const Icon(Icons.person, size: 18, color: AppTheme.primaryIndigo),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryIndigo.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.person_outline, size: 16, color: AppTheme.primaryIndigo),
+                ),
+                const SizedBox(width: 10),
                 Text(
                   order.customerName,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.darkGrey,
+                    color: Color(0xFF1A1A1A),
                   ),
                 ),
               ],
@@ -292,66 +323,73 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
             // Order Items Section
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppTheme.lightGrey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppTheme.lightGrey),
+                color: const Color(0xFFF8F9FB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.shopping_bag, size: 18, color: AppTheme.primaryIndigo),
-                      SizedBox(width: 8),
-                      Text(
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryIndigo.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.shopping_bag_outlined, size: 14, color: AppTheme.primaryIndigo),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
                         'Order Items',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.darkGrey,
+                          color: Color(0xFF1A1A1A),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   ...order.items.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Product Image
                         if (item.productImage != null && item.productImage!.isNotEmpty)
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(8),
                             child: Image.network(
                               item.productImage!,
-                              width: 50,
-                              height: 50,
+                              width: 54,
+                              height: 54,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Container(
-                                  width: 50,
-                                  height: 50,
+                                  width: 54,
+                                  height: 54,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.lightGrey,
-                                    borderRadius: BorderRadius.circular(6),
+                                    color: const Color(0xFFE5E7EB),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.image_not_supported, size: 24, color: AppTheme.blueGrey),
+                                  child: const Icon(Icons.image_not_supported_outlined, size: 24, color: Color(0xFF9CA3AF)),
                                 );
                               },
                             ),
                           )
                         else
                           Container(
-                            width: 50,
-                            height: 50,
+                            width: 54,
+                            height: 54,
                             decoration: BoxDecoration(
-                              color: AppTheme.lightGrey,
-                              borderRadius: BorderRadius.circular(6),
+                              color: const Color(0xFFE5E7EB),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.shopping_bag, size: 24, color: AppTheme.blueGrey),
+                            child: const Icon(Icons.shopping_bag_outlined, size: 24, color: Color(0xFF9CA3AF)),
                           ),
                         const SizedBox(width: 12),
                         // Product Details
@@ -363,8 +401,8 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                                 item.productName,
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppTheme.darkGrey,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1A1A1A),
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -376,14 +414,14 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                                     '₹${item.price.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 13,
-                                      color: AppTheme.blueGrey,
+                                      color: Color(0xFF6B7280),
                                     ),
                                   ),
                                   const Text(
                                     ' × ',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: AppTheme.blueGrey,
+                                      color: Color(0xFF6B7280),
                                     ),
                                   ),
                                   Text(
@@ -391,7 +429,7 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                                     style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: AppTheme.darkGrey,
+                                      color: Color(0xFF1A1A1A),
                                     ),
                                   ),
                                 ],
@@ -403,15 +441,15 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                         Text(
                           '₹${item.totalPrice.toStringAsFixed(2)}',
                           style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
                             color: AppTheme.primaryIndigo,
                           ),
                         ),
                       ],
                     ),
                   )),
-                  const Divider(height: 16),
+                  const Divider(height: 20, thickness: 1),
                   // Total Amount
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -420,15 +458,15 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                         'Total Amount',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.darkGrey,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A1A),
                         ),
                       ),
                       Text(
                         '₹${order.totalAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
                           color: AppTheme.primaryIndigo,
                         ),
                       ),
@@ -443,13 +481,13 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
             // Time
             Row(
               children: [
-                const Icon(Icons.access_time, size: 16, color: AppTheme.blueGrey),
-                const SizedBox(width: 4),
+                const Icon(Icons.access_time_outlined, size: 16, color: Color(0xFF9CA3AF)),
+                const SizedBox(width: 6),
                 Text(
                   _formatTime(order.createdAt),
                   style: const TextStyle(
                     fontSize: 14,
-                    color: AppTheme.blueGrey,
+                    color: Color(0xFF6B7280),
                   ),
                 ),
               ],
@@ -461,26 +499,32 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightGrey.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Customer Notes:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.blueGrey,
-                      ),
+                    const Row(
+                      children: [
+                        Icon(Icons.note_outlined, size: 14, color: Color(0xFFD97706)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Customer Notes:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFD97706),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       order.notes!,
                       style: const TextStyle(
                         fontSize: 14,
-                        color: AppTheme.darkGrey,
+                        color: Color(0xFF92400E),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -490,15 +534,15 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
               ),
             ],
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // View Details Button
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: AppTheme.primaryIndigo.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.primaryIndigo.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -508,10 +552,10 @@ class _OrderManagementScreenState extends State<OrderManagementScreen>
                     style: TextStyle(
                       fontSize: 13,
                       color: AppTheme.primaryIndigo,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(width: 4),
+                  SizedBox(width: 6),
                   Icon(Icons.arrow_forward_ios, size: 12, color: AppTheme.primaryIndigo),
                 ],
               ),

@@ -27,8 +27,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final googleAuthService = GoogleAuthService();
     
-    // Wait for splash screen animation
-    await Future.delayed(const Duration(seconds: 2));
+    // Wait for splash screen animation (3 seconds)
+    await Future.delayed(const Duration(seconds: 3));
     
     if (!mounted) return;
     
@@ -82,51 +82,37 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Lottie.network(
-              'https://lottie.host/95a5f784-9642-498c-8f9f-4318d1f2b1c4/G2In3j3V3Y.json',
-              width: 280,
-              height: 280,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppTheme.softPink,
-                  borderRadius: BorderRadius.circular(60),
+      body: Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.primaryYellow,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App Logo
+              Image.asset(
+                'img/applogo.png',
+                width: 150,
+                height: 150,
+              ),
+              const SizedBox(height: 24),
+              // App Title
+              const Text(
+                'INSTANT PICK',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.white,
+                  letterSpacing: 2,
                 ),
-                child: const Icon(
-                  Icons.shopping_bag,
-                  size: 60,
-                  color: AppTheme.primaryPink,
-                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Local Marketplace',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryPink,
-                letterSpacing: 1.2,
+              const SizedBox(height: 48),
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.white),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Shop Local, Shop Easy',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppTheme.darkGrey,
-                fontWeight: FontWeight.w300,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

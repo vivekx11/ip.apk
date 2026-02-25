@@ -72,13 +72,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: AppTheme.softPink,
+                      color: AppTheme.softYellow,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: const Icon(
                       Icons.shopping_bag_outlined,
                       size: 50,
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
                   ),
                 ),
@@ -110,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Phone Number',
                     hintText: 'Enter 10-digit phone number',
-                    prefixIcon: Icon(Icons.phone, color: AppTheme.primaryPink),
+                    prefixIcon: Icon(Icons.phone, color: AppTheme.primaryYellow),
                     prefixText: '+91 ',
                   ),
                 ),

@@ -19,7 +19,25 @@ class CartProvider extends ChangeNotifier {
 
   List<CartItemModel> get cartItems => _items.values.toList();
 
-  void addItem(ProductModel product, {int quantity = 1}) {
+  // Returns error message if item cannot be added, null if successful
+  String? addItem(ProductModel product, {int quantity = 1}) {
+    // Check if product is available
+    if (!product.isAvailable) {
+      return 'Product is not available';
+    }
+
+    // Calculate total quantity that would be in cart
+    int totalQuantity = quantity;
+    if (_items.containsKey(product.id)) {
+      totalQuantity += _items[product.id]!.quantity;
+    }
+
+    // Check if total quantity exceeds available stock
+    if (totalQuantity > product.stock) {
+      return 'Not available in store. Only ${product.stock} items available';
+    }
+
+    // Add or update item in cart
     if (_items.containsKey(product.id)) {
       _items.update(
         product.id,
@@ -31,6 +49,7 @@ class CartProvider extends ChangeNotifier {
           shopId: existingItem.shopId,
           shopName: existingItem.shopName,
           imageUrl: existingItem.imageUrl,
+          availableStock: product.stock,
         ),
       );
     } else {
@@ -44,10 +63,12 @@ class CartProvider extends ChangeNotifier {
           shopId: product.shopId,
           shopName: product.shopName,
           imageUrl: product.imageUrls.isNotEmpty ? product.imageUrls.first : '',
+          availableStock: product.stock,
         ),
       );
     }
     notifyListeners();
+    return null; // Success
   }
 
   void removeItem(String productId) {
@@ -55,26 +76,38 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateQuantity(String productId, int quantity) {
+  // Returns error message if quantity cannot be updated, null if successful
+  String? updateQuantity(String productId, int quantity) {
     if (_items.containsKey(productId)) {
       if (quantity <= 0) {
         _items.remove(productId);
-      } else {
-        _items.update(
-          productId,
-          (existingItem) => CartItemModel(
-            productId: existingItem.productId,
-            productName: existingItem.productName,
-            price: existingItem.price,
-            quantity: quantity,
-            shopId: existingItem.shopId,
-            shopName: existingItem.shopName,
-            imageUrl: existingItem.imageUrl,
-          ),
-        );
+        notifyListeners();
+        return null;
       }
+
+      final existingItem = _items[productId]!;
+      
+      // Check stock availability using stored availableStock
+      if (quantity > existingItem.availableStock) {
+        return 'Not available in store. Only ${existingItem.availableStock} items available';
+      }
+
+      _items.update(
+        productId,
+        (existingItem) => CartItemModel(
+          productId: existingItem.productId,
+          productName: existingItem.productName,
+          price: existingItem.price,
+          quantity: quantity,
+          shopId: existingItem.shopId,
+          shopName: existingItem.shopName,
+          imageUrl: existingItem.imageUrl,
+          availableStock: existingItem.availableStock,
+        ),
+      );
       notifyListeners();
     }
+    return null; // Success
   }
 
   void clear() {

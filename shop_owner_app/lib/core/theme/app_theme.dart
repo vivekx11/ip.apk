@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Indigo theme colors for Shop Owner App
-  static const Color primaryIndigo = Color(0xFF3F51B5);
-  static const Color lightIndigo = Color(0xFF9FA8DA);
-  static const Color darkIndigo = Color(0xFF303F9F);
+  // Updated theme colors for Shop Owner App
+  static const Color primaryIndigo = Color(0xFF81C784); // Light Green (was Indigo)
+  static const Color lightIndigo = Color(0xFFA5D6A7); // Lighter Green (was Light Indigo)
+  static const Color darkIndigo = Color(0xFF283593); // Dark Indigo (kept as dark indigo)
   static const Color primaryBlue = Color(0xFF2196F3);
   static const Color softBlue = Color(0xFFE3F2FD);
   static const Color blueGrey = Color(0xFF607D8B);
@@ -18,18 +18,18 @@ class AppTheme {
 
   static ThemeData get shopOwnerAppTheme {
     return ThemeData(
-      primarySwatch: Colors.indigo,
-      primaryColor: primaryIndigo,
+      primarySwatch: Colors.green,
+      primaryColor: primaryIndigo, // Light Green
       scaffoldBackgroundColor: white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: primaryIndigo,
+        backgroundColor: primaryIndigo, // Light Green AppBar
         foregroundColor: white,
         elevation: 0,
         centerTitle: true,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryIndigo,
+          backgroundColor: primaryIndigo, // Light Green buttons
           foregroundColor: white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -54,18 +54,18 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: primaryIndigo, width: 2),
+          borderSide: const BorderSide(color: primaryIndigo, width: 2), // Light Green focus
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: white,
-        selectedItemColor: primaryIndigo,
+        selectedItemColor: primaryIndigo, // Light Green selected
         unselectedItemColor: blueGrey,
         type: BottomNavigationBarType.fixed,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: lightIndigo.withOpacity(0.2),
-        labelStyle: const TextStyle(color: primaryIndigo),
+        backgroundColor: lightIndigo.withOpacity(0.2), // Lighter Green chips
+        labelStyle: const TextStyle(color: primaryIndigo), // Light Green text
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),

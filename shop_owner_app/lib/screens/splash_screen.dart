@@ -28,8 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final shopProvider = Provider.of<ShopProvider>(context, listen: false);
     final simpleAuthService = SimpleAuthService();
     
-    // Wait for splash screen animation
-    await Future.delayed(const Duration(seconds: 2));
+    // Wait for splash screen animation (3 seconds)
+    await Future.delayed(const Duration(seconds: 3));
     
     if (!mounted) return;
     
@@ -91,42 +91,21 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppTheme.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.darkIndigo.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.store,
-                size: 60,
-                color: AppTheme.primaryIndigo,
-              ),
+            // App Logo
+            Image.asset(
+              'img/applogo.png',
+              width: 150,
+              height: 150,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
+            // App Title
             const Text(
-              'Shop Owner Dashboard',
+              'INSTANT PICK',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 36,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Manage Your Business',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppTheme.white,
-                fontWeight: FontWeight.w300,
+                letterSpacing: 2,
               ),
             ),
             const SizedBox(height: 48),

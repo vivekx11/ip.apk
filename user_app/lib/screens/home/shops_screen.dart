@@ -128,10 +128,10 @@ class _ShopsScreenState extends State<ShopsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softPink,
+      backgroundColor: AppTheme.softYellow,
       appBar: AppBar(
         title: const Text('Discover Shops'),
-        backgroundColor: AppTheme.primaryPink,
+        backgroundColor: AppTheme.primaryYellow,
         foregroundColor: AppTheme.white,
         elevation: 0,
         actions: [
@@ -183,17 +183,17 @@ class _ShopsScreenState extends State<ShopsScreen> {
         children: [
           // Search Bar
           Container(
-            color: AppTheme.primaryPink,
+            color: AppTheme.primaryYellow,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: TextField(
               controller: _searchController,
               onChanged: _filterShops,
               decoration: InputDecoration(
                 hintText: 'Search shops, categories...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryPink),
+                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryYellow),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, color: AppTheme.primaryPink),
+                        icon: const Icon(Icons.clear, color: AppTheme.primaryYellow),
                         onPressed: () {
                           _searchController.clear();
                           _filterShops('');
@@ -216,7 +216,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      color: AppTheme.primaryPink,
+                      color: AppTheme.primaryYellow,
                     ),
                   )
                 : _filteredShops.isEmpty
@@ -227,13 +227,13 @@ class _ShopsScreenState extends State<ShopsScreen> {
                             Container(
                               padding: const EdgeInsets.all(32),
                               decoration: BoxDecoration(
-                                color: AppTheme.lightPink.withOpacity(0.3),
+                                color: AppTheme.lightYellow.withOpacity(0.3),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
                                 Icons.store_outlined,
                                 size: 64,
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -292,14 +292,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppTheme.white,
-                AppTheme.primaryPink.withOpacity(0.03),
-              ],
-            ),
+            color: AppTheme.white,
           ),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -310,14 +303,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                   width: 90,
                   height: 90,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        AppTheme.primaryPink.withOpacity(0.2),
-                        AppTheme.lightPink.withOpacity(0.3),
-                      ],
-                    ),
+                    color: AppTheme.primaryYellow.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Stack(
@@ -326,7 +312,7 @@ class _ShopsScreenState extends State<ShopsScreen> {
                         child: Icon(
                           Icons.store,
                           size: 45,
-                          color: AppTheme.primaryPink,
+                          color: AppTheme.primaryYellow,
                         ),
                       ),
                       if (isSubscribed)
@@ -411,13 +397,13 @@ class _ShopsScreenState extends State<ShopsScreen> {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryPink.withOpacity(0.15),
+                              color: AppTheme.primaryYellow.withOpacity(0.15),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               shop.category,
                               style: const TextStyle(
-                                color: AppTheme.primaryPink,
+                                color: AppTheme.primaryYellow,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),

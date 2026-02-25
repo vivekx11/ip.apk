@@ -6,6 +6,7 @@ class CartItemModel {
   final String shopId;
   final String shopName;
   final String imageUrl;
+  final int availableStock; // Track available stock for validation
 
   CartItemModel({
     required this.productId,
@@ -15,6 +16,7 @@ class CartItemModel {
     required this.shopId,
     required this.shopName,
     this.imageUrl = '',
+    this.availableStock = 100, // Default to 100 if not specified
   });
 
   double get totalPrice => price * quantity;
@@ -28,6 +30,7 @@ class CartItemModel {
       shopId: json['shopId'],
       shopName: json['shopName'],
       imageUrl: json['imageUrl'] ?? '',
+      availableStock: json['availableStock'] ?? 100,
     );
   }
 
@@ -40,6 +43,7 @@ class CartItemModel {
       'shopId': shopId,
       'shopName': shopName,
       'imageUrl': imageUrl,
+      'availableStock': availableStock,
     };
   }
 
@@ -51,6 +55,7 @@ class CartItemModel {
     String? shopId,
     String? shopName,
     String? imageUrl,
+    int? availableStock,
   }) {
     return CartItemModel(
       productId: productId ?? this.productId,
@@ -60,6 +65,7 @@ class CartItemModel {
       shopId: shopId ?? this.shopId,
       shopName: shopName ?? this.shopName,
       imageUrl: imageUrl ?? this.imageUrl,
+      availableStock: availableStock ?? this.availableStock,
     );
   }
 }
